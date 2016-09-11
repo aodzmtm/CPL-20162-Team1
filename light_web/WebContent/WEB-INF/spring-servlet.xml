@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:p="http://www.springframework.org/schema/p"
+
+	xmlns:context="http://www.springframework.org/schema/context"
+
+	xmlns:mvc="http://www.springframework.org/schema/mvc" xmlns:websocket="http://www.springframework.org/schema/websocket"
+
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.2.xsd  
+
+      http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.2.xsd  
+
+      http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-3.2.xsd
+      
+            http://www.springframework.org/schema/websocket http://www.springframework.org/schema/websocket/spring-websocket.xsd
+      ">
+
+	<!-- <context:component-scan base-package="a.b.springtiles" /> <context:annotation-config 
+		/> -->
+
+	<!-- Handles HTTP GET requests for /resources/** by efficiently serving 
+		up static resources in the ${webappRoot}/resources directory -->
+
+
+
+
+
+	<!-- <websocket:handlers> <websocket:mapping path="/echo.do" handler="myHandler"/> 
+		</websocket:handlers> <bean id="myHandler" class="light.common.EchoHandler"/> -->
+
+	<mvc:annotation-driven />
+	<!-- interceptors -->
+
+	<mvc:interceptors>
+		<mvc:interceptor>
+			<mvc:mapping path="/**" />
+			<bean id="loggerInterceptor" class="light.common.LoggerInterceptor"></bean>
+		</mvc:interceptor>
+
+	</mvc:interceptors>
+
+	<mvc:resources location="/WEB-INF/js/" mapping="/js/**" />
+
+
+	<!-- controller -->
+
+	<bean id="PageController" class="light.controller.PageController" />
+
+
+
+	<!-- TilesConfigurer -->
+	<bean id="tilesviewResolver"
+		class="org.springframework.web.servlet.view.tiles3.TilesViewResolver" />
+
+	<bean id="tilesConfigurer"
+		class="org.springframework.web.servlet.view.tiles3.TilesConfigurer">
+
+		<property name="definitions">
+
+			<list>
+
+				<value>/WEB-INF/tiles.xml</value>
+
+			</list>
+
+		</property>
+
+	</bean>
+
+	<!-- JstlView -->
+	<!-- <bean id="viewResolver" class="org.springframework.web.servlet.view.InternalResourceViewResolver"> 
+		<property name="viewClass"> <value>org.springframework.web.servlet.view.JstlView</value> 
+		</property> <property name="prefix" value="child_page/" /> <property name="suffix" 
+		value=".jsp" /> <property name="order" value="2" /> </bean> -->
+
+
+
+</beans>

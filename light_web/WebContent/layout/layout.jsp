@@ -17,39 +17,65 @@
 
 
 </head>
-
 <body>
-	<center>
 
-		<table style="width: 100%; height: 500px; border: 1px; border-style: 1px;">
-			<tr>
-				<tiles:insertAttribute name="menu" />
-			</tr>
-			<tr>
-				<td><tiles:insertAttribute name="leftSide" /></td>
-				<td style="width: 70%;">
-					<div>
-						<tiles:insertAttribute name="main" />
-					</div>
-					<div>
-						<tiles:insertAttribute name="state" />
-					</div>
-				</td>
+	<table border=2 bordercolor=red width=98% align=center>
+		<tr>
+			<td align=center colspan=3><tiles:insertAttribute name="menu" /></td>
+		</tr>
+		<tr>
+			<td width=15% align=center><tiles:insertAttribute
+					name="leftSide" /></td>
+			<td width=70% height="100%" align=center><tiles:insertAttribute
+					name="main" />
+				<div>
+					<%-- 	<tiles:insertAttribute name="state" /> --%>
+				</div></td>
 
-				<td><tiles:insertAttribute name="rightSide" /></td>
-			</tr>
-			<tr>
-
-
-			</tr>
-		</table>
-
-
-		<div>
-			<tiles:insertAttribute name="footer" />
-		</div>
-	</center>
+			<td width=15% align=center><tiles:insertAttribute
+					name="rightSide" /></td>
+		</tr>
+		<tr>
+			<td align=center colspan=3><tiles:insertAttribute name="footer" /></td>
+		</tr>
+	</table>
 </body>
+<%-- <body>
+
+	<table
+		style="width: 100%; height: 1000px; border: 1px; border-style: 1px; border-color: black">
+
+
+		<tr style="height: 100%;">
+			<tiles:insertAttribute name="menu" />
+		</tr>
+
+
+		<tr>
+			<td><tiles:insertAttribute name="leftSide" /></td>
+
+
+
+
+			<td style="width: 70%; height: 100%;"><tiles:insertAttribute
+					name="main" />
+				<div>
+					<tiles:insertAttribute name="state" />
+				</div></td>
+
+
+
+
+			<td><tiles:insertAttribute name="rightSide" /></td>
+		</tr>
+		<tr style="height: 100%;">
+			<tiles:insertAttribute name="footer" />
+		</tr>
+	</table>
+
+
+
+</body> --%>
 
 
 </html>

@@ -1,4 +1,4 @@
-package light.common;
+package light.webSocket;
 
 import java.io.IOException;
 import java.util.Collections;

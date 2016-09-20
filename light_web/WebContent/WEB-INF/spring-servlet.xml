@@ -33,13 +33,9 @@
 	<mvc:annotation-driven />
 	<!-- interceptors -->
 
-	<mvc:interceptors>
-		<mvc:interceptor>
-			<mvc:mapping path="/**" />
-			<bean id="loggerInterceptor" class="light.common.LoggerInterceptor"></bean>
-		</mvc:interceptor>
-
-	</mvc:interceptors>
+	<!-- <mvc:interceptors> <mvc:interceptor> <mvc:mapping path="/**" /> <bean 
+		id="loggerInterceptor" class="light.common.LoggerInterceptor"></bean> </mvc:interceptor> 
+		</mvc:interceptors> -->
 
 	<mvc:resources location="/WEB-INF/js/" mapping="/js/**" />
 
@@ -47,6 +43,10 @@
 	<!-- controller -->
 
 	<bean id="PageController" class="light.controller.PageController" />
+
+
+	<bean id="jacksonMessageConverter"
+		class="org.springframework.http.converter.json.MappingJackson2HttpMessageConverter" />
 
 
 

@@ -20,7 +20,6 @@ html, body {
 	<div id="map" style="width: 100%; height: 700px;"></div>
 
 
-
 	<script async defer
 		src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBegclj2YbPYPTIhCkA6korgBWEth5Q6v8&callback=initMap">
 		

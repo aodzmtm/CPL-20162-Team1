@@ -58,6 +58,21 @@ public class PageController {
 	}
 
 
+
+	@RequestMapping("/grid")
+	public ModelAndView gridView(HttpServletRequest request, HttpServletResponse response) {
+
+	
+		String message = "grid start";
+		ModelAndView model = new ModelAndView("grid", "message", message);
+		// request.getParameter("name")
+		System.out.println(message);
+
+		return model;
+	}
+
+	
+	
 	@RequestMapping(value = "/json.do")
 	public @ResponseBody List<TestVo> getJsonByMap(HttpServletRequest request, HttpServletResponse response) {
 
@@ -102,4 +117,17 @@ public class PageController {
 		return list;
 	}
 
+	
+	@RequestMapping(value = "/gridJson.do")
+	public @ResponseBody List<TestVo> getGridByMap(HttpServletRequest request, HttpServletResponse response) {
+		
+		session = MyBatisSessionFactory.getSqlSession();
+		HashMap map = new HashMap<String, Object>();
+		List<TestVo> list = session.selectList("SqlSampleMapper.daoTest", map);
+
+		session.close();
+
+		return list;
+	}
+	
 }

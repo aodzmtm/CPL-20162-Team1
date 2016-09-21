@@ -29,7 +29,7 @@
 			<td width=70% height="100%" align=center><tiles:insertAttribute
 					name="main" />
 				<div>
-					<%-- 	<tiles:insertAttribute name="state" /> --%>
+						<tiles:insertAttribute name="state" /> 
 				</div></td>
 
 			<td width=15% align=center><tiles:insertAttribute

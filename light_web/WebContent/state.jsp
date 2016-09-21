@@ -32,6 +32,14 @@
 
 	function onMessage(event) {
 		textarea.value += "상대 : " + event.data + "\n";
+		var x = 40.714224;
+		var y = -73.997;
+		var addparam = {
+			lat : x,
+			lng : y
+		};
+		addMarker(addparam);
+
 	}
 
 	function onOpen(event) {

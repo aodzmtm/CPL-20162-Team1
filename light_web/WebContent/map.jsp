@@ -24,15 +24,7 @@ html, body {
 		src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBegclj2YbPYPTIhCkA6korgBWEth5Q6v8&callback=initMap">
 		
 	</script>
-	<div>
 
-		<fieldset>
-			<textarea id="messageWindow" rows="10" cols="50" readonly="true"
-				style="width: 100%;"></textarea>
-			<br /> <input id="inputMessage" type="text" /> <input type="submit"
-				value="send" onclick="send()" />
-		</fieldset>
-	</div>
 </body>
 <script type="text/javascript">
 	//map
@@ -41,7 +33,6 @@ html, body {
 	 lng : -73.997
 	 lat: -25.363, lng: 131.044
 	 */
-
 	//var x, y;
 	var map;
 	//var marker;
@@ -130,45 +121,5 @@ html, body {
 
 	//connect
 
-	var textarea = document.getElementById("messageWindow");
-	var webSocket = new WebSocket('ws://localhost:8080/light_web/echo.do');
-	var inputMessage = document.getElementById('inputMessage');
-	webSocket.onerror = function(event) {
-		onError(event)
-	};
-
-	webSocket.onopen = function(event) {
-		onOpen(event)
-	};
-
-	webSocket.onmessage = function(event) {
-		onMessage(event)
-	};
-
-	function onMessage(event) {
-		textarea.value += "상대 : " + event.data + "\n";
-		var x = 40.714224;
-		var y = -73.997;
-		var addparam = {
-			lat : x,
-			lng : y
-		};
-		addMarker(addparam);
-
-	}
-
-	function onOpen(event) {
-		textarea.value += "연결 성공\n";
-	}
-
-	function onError(event) {
-		alert(event.data);
-	}
-
-	function send() {
-		textarea.value += "나 : " + inputMessage.value + "\n";
-		webSocket.send(inputMessage.value);
-		inputMessage.value = "";
-	}
 </script>
 </html>

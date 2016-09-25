@@ -19,12 +19,14 @@
 </head>
 <body>
 
-	<table border=2 bordercolor=red width=98% align=center>
+	<table width="100%">
+	<!-- 
 		<tr>
 			<td align=center colspan=3><tiles:insertAttribute name="menu" /></td>
 		</tr>
+	-->
 		<tr>
-			<td width=15% align=center><tiles:insertAttribute
+			<td width="300px" style="vertical-align: top"><tiles:insertAttribute
 					name="leftSide" /></td>
 			<td width=70% height="100%" align=center><tiles:insertAttribute
 					name="main" />
@@ -32,7 +34,7 @@
 						<tiles:insertAttribute name="state" /> 
 				</div></td>
 
-			<td width=15% align=center><tiles:insertAttribute
+			<td width="300px" align=center><tiles:insertAttribute
 					name="rightSide" /></td>
 		</tr>
 		<tr>

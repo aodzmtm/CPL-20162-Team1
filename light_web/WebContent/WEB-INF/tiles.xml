@@ -7,7 +7,7 @@
 
 <tiles-definitions>
 
-	<!-- Main -->
+	<!-- Main  -->
 
 	<definition
 	     name="main.definition" template="/layout/layout.jsp">

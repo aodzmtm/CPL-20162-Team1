@@ -20,11 +20,9 @@
 <body>
 
 	<table width="100%">
-	<!-- 
 		<tr>
 			<td align=center colspan=3><tiles:insertAttribute name="menu" /></td>
 		</tr>
-	-->
 		<tr>
 			<td width="300px" style="vertical-align: top"><tiles:insertAttribute
 					name="leftSide" /></td>
@@ -34,7 +32,7 @@
 						<tiles:insertAttribute name="state" /> 
 				</div></td>
 
-			<td width="300px" align=center><tiles:insertAttribute
+			<td width="300px" align=center  style="vertical-align: top"><tiles:insertAttribute
 					name="rightSide" /></td>
 		</tr>
 		<tr>

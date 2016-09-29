@@ -9,25 +9,25 @@
 	border-top: 0px; border-bottom: 0px; border-left: 0px; border-right:0px">
   	<tbody>
   		<tr height="30px">
-  			<td width="50%"><span style="margin:5px">가로등 id</span></td><td align="right">1</td>
+  			<td width="50%"><span style="margin:5px">가로등 id</span></td><td align="right"><input type="text" class="stateElement" id="id" value="" size="15" readonly></td>
   		</tr>
   		<tr height="30px">
-  			<td><span style="margin:5px">비콘 주소</span></td><td align="right">123456789abc</td>
+  			<td><span style="margin:5px">비콘 주소</span></td><td align="right"><input type="text" class="stateElement" id="beacon_addr" value="" size="15" readonly></td>
   		</tr>
   		<tr height="30px">
-  			<td><span style="margin:5px">비콘 id</span></td><td align="right">111111</td>
+  			<td><span style="margin:5px">비콘 id</span></td><td align="right"><input type="text" class="stateElement" id="beacon_id" value="" size="15" readonly></td>
   		</tr>
   		<tr height="30px">
-  			<td><span style="margin:5px">가로등 위치</span></td><td align="right">공대9호관#1</td>
+  			<td><span style="margin:5px">가로등 위치</span></td><td align="right"><input type="text" class="stateElement" id="location" value="" size="15" readonly></td>
   		</tr>
   		<tr height="30px">
-  			<td><span style="margin:5px">날짜</span></td><td align="right">2016-09-20</td>
+  			<td><span style="margin:5px">날짜</span></td><td align="right"><input type="text" class="stateElement" id="date_time" value="" size="15" readonly></td>
   		</tr>
   		<tr height="30px">
-  			<td><span style="margin:5px">전원</span></td><td align="right">활성화</td>
+  			<td><span style="margin:5px">전원</span></td><td align="right"><input type="text" class="stateElement" id="lamp_state" value="" size="15" readonly></td>
   		</tr>
   		<tr height="30px">
-  			<td><span style="margin:5px">상태</span></td><td align="right">정상</td>
+  			<td><span style="margin:5px">상태</span></td><td align="right"><input type="text" class="stateElement" id="lamp_failure" value="" size="15" readonly></td>
   		</tr>
   	</tbody>
   </table>

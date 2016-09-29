@@ -6903,3 +6903,9 @@ button.close {
 .numberOfLight {
 	color:#999999;	
 }
+
+.stateElement {
+	background-color:transparent;
+	border:0 solid black;
+	text-align:right;
+}

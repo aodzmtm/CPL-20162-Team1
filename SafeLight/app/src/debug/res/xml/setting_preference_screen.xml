@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <PreferenceCategory android:title="Beacon 설정" >
+        <EditTextPreference
+            android:defaultValue="b9407f30-f5f8-466e-aff9-25556b57fe6d"
+            android:key="keyUUID"
+            android:maxLines="1"
+            android:selectAllOnFocus="true"
+            android:singleLine="true"
+            android:title="UUID 설정"
+            android:summary="Bluetooth Beacon을 검색할 UUID를 입력합니다." />
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="saveRSSI"
+            android:summaryOff="RSSI를 저장하지 않습니다."
+            android:summaryOn="RSSI를 저장합니다."
+            android:title="RSSI 저장" />
+    </PreferenceCategory>
+</PreferenceScreen>

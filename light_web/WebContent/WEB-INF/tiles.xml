@@ -14,21 +14,25 @@
 		<put-attribute name="title" value="Main_Home" />
 		<put-attribute name="menu" value="/menu/main_menu.jsp" />
 		<put-attribute name="main" value="" />
-		<put-attribute name="leftSide" value="/menu/leftSide.jsp" />
+		<put-attribute name="leftSide" value="/menu/leftSide1.jsp" />
 		<put-attribute name="rightSide" value="/menu/rightSide.jsp" />
-			<put-attribute name="state" value="/state.jsp" />
+		<put-attribute name="state" value="/state.jsp" />
 		<put-attribute name="footer" value="/footer.jsp" />
 	</definition>
 
 	<definition name="main" extends="main.definition">
 		<put-attribute name="title" value="Main_Home" />
 		<put-attribute name="main" value="/map.jsp" />
+		<put-attribute name="leftSide" value="/menu/leftSide1.jsp" />
 	
 	</definition>
 
 	<definition name="grid" extends="main.definition">
 		<put-attribute name="title" value="Main_Home" />
 		<put-attribute name="main" value="/grid.jsp" />
+		<put-attribute name="leftSide" value="/menu/leftSide2.jsp" />
 	</definition>
+	
 
+    
 </tiles-definitions>

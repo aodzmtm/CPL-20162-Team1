@@ -13,6 +13,7 @@
 <script src="js/common.js" language="javaScript" type="text/javascript">
 	
 </script>
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
 <link type="text/css" href="css/layout.css" rel="stylesheet" />
 
 
@@ -76,6 +77,7 @@
 
 
 </body> --%>
+
 
 
 </html>

@@ -37,7 +37,7 @@ import com.google.android.gms.maps.model.TileProvider;
 
 import java.io.ByteArrayOutputStream;
 
-public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
+public class MainActivity extends FragmentActivity implements OnMapReadyCallback {
 
     private GoogleMap mMap;
 
@@ -86,7 +86,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
-            startActivity(new Intent(MapsActivity.this, SettingActivity.class));
+            startActivity(new Intent(MainActivity.this, SettingActivity.class));
             return true;
         }
 
@@ -101,7 +101,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             switch(v.getId())
             {
                 case R.id.btn_scan:
-                    startActivity(new Intent(MapsActivity.this, BleDeviceScanActivity.class));
+                    startActivity(new Intent(MainActivity.this, BleDeviceScanActivity.class));
                     finish();
                     break;
                 case R.id.btn_active_service:

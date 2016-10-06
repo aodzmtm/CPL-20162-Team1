@@ -1,3 +1,5 @@
+import org.java_websocket.client.WebSocketClient;
+
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
@@ -20,8 +22,6 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-
-import org.java_websocket.client.WebSocketClient;
 
 public class ServerStressTest extends JFrame {
 	private JSlider clients;

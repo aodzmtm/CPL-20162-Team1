@@ -47,12 +47,12 @@ html, body {
 	 }; */
 	function initMap() {
 		var haightAshbury = {
-			lat : 37.769,
-			lng : -122.446
+			lat : 35.886,
+			lng : 128.610
 		};
 
 		map = new google.maps.Map(document.getElementById('map'), {
-			zoom : 4,
+			zoom : 18,
 			center : haightAshbury,
 			mapTypeId : google.maps.MapTypeId.ROADMAP
 		});

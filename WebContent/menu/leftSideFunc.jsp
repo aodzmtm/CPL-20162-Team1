@@ -9,10 +9,9 @@ function logInCheck() {
 		/* alert("${sessionScope.admin.admin_id}"); */
 		log_in_state = document.getElementById("log_in_state");
 		log_in_state.innerHTML =
-			"<tr><td style=\"font-size:10px; text-align: right;\"><a href=\"userInfo.do\">내 정보</a>&nbsp&nbsp&nbsp<a href=\"logOut.do\">로그아웃</a><td></tr>"
-			+"<tr style=\"height: 150px;\"><td><img src=\"img/log_in.PNG\"></td></tr>"
-			+ "<tr style=\"height: 30px;\"><td>관리자 아이디 : ${sessionScope.admin.admin_id}</td></tr>"
-			+ "<tr style=\"height: 30px;\"><td>관리자 이름 : ${sessionScope.admin.admin_name }</td></tr>";
+			"<tr style=\"height: 30px;\"><td>관리자 아이디 : ${sessionScope.admin.admin_id}</td></tr>"
+			+ "<tr style=\"height: 30px;\"><td>관리자 이름 : ${sessionScope.admin.admin_name }</td></tr>"
+			+ "<tr><td style=\"font-size:10px; height: 30px\"><a href=\"userInfo.do\">내 정보</a>&nbsp&nbsp&nbsp<a href=\"logOut.do\">로그아웃</a><td></tr>";
 		lampInfoStateConnect();	
 	}
 }

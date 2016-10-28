@@ -126,59 +126,61 @@
 		</table>
 
 	</div>
-	<div
-		style="width: 100%; height: 40px; text-align: center; background: linear-gradient(#bce1fa, #bce1fa, white); border-radius: 10px 10px 0px 0px; align: center; font-size: 15px; color: #2e62d9; font-weight: bold; border: 1; margin-bottom: 10px;">
-		<div style="padding-top: 10px;">보안등 현황</div>
-	</div>
-	<div
-		style="width: 265px; margin: auto; text-align: center; margin-bottom: 15px; border: 0px;">
-
-		<div align="center">
-			<table style="width: 80%">
-				<tbody>
-					<tr height="30px">
-						<td align="left"><span style="color: #8a9294">● 정전 여부</span></td>
-						<td align="right"><input class="stateElement" size="5"
-							value="" id="power_off_total" onclick="powerOffTotalFilter()"
-							readonly="readonly"></input> <span class="numberOfLight">
-								대 </span></td>
-					</tr>
-					<tr height="30px">
-						<td align="left"><span style="color: #12b806">● 이상 점소등</span></td>
-						<td align="right"><input class="stateElement" size="5"
-							id="abnormal_blink_total" value=""
-							onclick="abnormalBlinkTotalFilter()" readonly="readonly"></input>
-							<span class="numberOfLight"> 대 </span></td>
-					</tr>
-					<tr height="30px">
-						<td align="left"><span style="color: #ce3df2">● 누전 여부</span></td>
-						<td align="right"><input class="stateElement" size="5"
-							id="short_circuit_total" value=""
-							onclick="shortCircuitTotalFilter()" readonly="readonly"></input>
-							<span class="numberOfLight"> 대 </span></td>
-					</tr>
-					<tr height="30px">
-						<td align="left"><span style="color: #f51e13">● 보안등 고장</span></td>
-						<td align="right"><input class="stateElement" size="5"
-							id="lamp_failure_total" value=""
-							onclick="lampFailureTotalFilter()" readonly="readonly"></input> <span
-							class="numberOfLight"> 대 </span></td>
-					</tr>
-					<tr height="30px">
-						<td align="left"><span style="color: #f57128">● 점소등 상태</span></td>
-						<td align="right"><input class="stateElement" size="5"
-							id="lamp_state_total" value="" onclick="lampStateTotalFilter()"
-							readonly="readonly"> <span class="numberOfLight">
-								대 </span></td>
-					</tr>
-					<tr height="30px">
-						<td colspan="2" align="right">총<input class="stateElement"
-							size="3" id="lamp_total" value="" onclick="lampTotalFilter()"
-							readonly="readonly"></input>대
-						</td>
-					</tr>
-				</tbody>
-			</table>
+	<div class="panel panel-primary">
+		<div
+			style="width: 100%; height: 40px; text-align: center; background: linear-gradient(#bce1fa, #bce1fa, white); border-radius: 10px 10px 0px 0px; align: center; font-size: 15px; color: #2e62d9; font-weight: bold; border: 1; margin-bottom: 10px;">
+			<div style="padding-top: 10px;">보안등 현황</div>
+		</div>
+		<div
+			style="width: 265px; margin: auto; text-align: center; margin-bottom: 15px; border: 0px;">
+	
+			<div align="center">
+				<table style="width: 80%">
+					<tbody>
+						<tr height="30px">
+							<td align="left"><span style="color: #8a9294">● 정전 여부</span></td>
+							<td align="right"><input class="stateElement" size="5"
+								value="" id="power_off_total" onclick="powerOffTotalFilter()"
+								readonly="readonly"></input> <span class="numberOfLight">
+									대 </span></td>
+						</tr>
+						<tr height="30px">
+							<td align="left"><span style="color: #12b806">● 이상 점소등</span></td>
+							<td align="right"><input class="stateElement" size="5"
+								id="abnormal_blink_total" value=""
+								onclick="abnormalBlinkTotalFilter()" readonly="readonly"></input>
+								<span class="numberOfLight"> 대 </span></td>
+						</tr>
+						<tr height="30px">
+							<td align="left"><span style="color: #ce3df2">● 누전 여부</span></td>
+							<td align="right"><input class="stateElement" size="5"
+								id="short_circuit_total" value=""
+								onclick="shortCircuitTotalFilter()" readonly="readonly"></input>
+								<span class="numberOfLight"> 대 </span></td>
+						</tr>
+						<tr height="30px">
+							<td align="left"><span style="color: #f51e13">● 보안등 고장</span></td>
+							<td align="right"><input class="stateElement" size="5"
+								id="lamp_failure_total" value=""
+								onclick="lampFailureTotalFilter()" readonly="readonly"></input> <span
+								class="numberOfLight"> 대 </span></td>
+						</tr>
+						<tr height="30px">
+							<td align="left"><span style="color: #f57128">● 점소등 상태</span></td>
+							<td align="right"><input class="stateElement" size="5"
+								id="lamp_state_total" value="" onclick="lampStateTotalFilter()"
+								readonly="readonly"> <span class="numberOfLight">
+									대 </span></td>
+						</tr>
+						<tr height="30px">
+							<td colspan="2" align="right">총<input class="stateElement"
+								size="3" id="lamp_total" value="" onclick="lampTotalFilter()"
+								readonly="readonly"></input>대
+							</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
 		</div>
 	</div>
 </div>

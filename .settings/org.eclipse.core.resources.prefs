@@ -1,5 +1,6 @@
 eclipse.preferences.version=1
 encoding//WebContent/dialog/dialogFunc.jsp=UTF-8
+encoding//WebContent/graph/graph.jsp=UTF-8
 encoding//WebContent/grid/grid.jsp=UTF-8
 encoding//WebContent/grid/gridHistory/gridHistory.jsp=UTF-8
 encoding//WebContent/grid/gridHistory/gridHistoryFunc.jsp=UTF-8

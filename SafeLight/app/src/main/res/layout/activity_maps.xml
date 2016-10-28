@@ -1,0 +1,95 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <RelativeLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <Button
+            android:text="SCAN"
+            android:layout_width="40sp"
+            android:layout_height="40sp"
+            android:background="@drawable/btn_scan"
+            android:id="@+id/btn_scan"
+            android:layout_alignParentTop="true"
+            android:layout_weight="1"/>
+
+        <Button
+            android:text="STOP Service"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_weight="1"
+            android:id="@+id/btn_stop_service" />
+
+        <Button
+            android:text="Active Service"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:id="@+id/btn_active_service"
+            android:layout_alignParentTop="true"
+            android:layout_toStartOf="@+id/btn_stop_service" />
+
+
+    </RelativeLayout>
+
+    <TextView
+        android:text="Scanning beacons..."
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/ShowState"
+        android:background="@color/wallet_highlighted_text_holo_light" />
+
+    <RelativeLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/wallet_highlighted_text_holo_dark">
+
+        <Button
+            android:text="SAFE ROUTE"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/Safe"
+            android:layout_weight="1"
+            android:background="@android:color/holo_green_light" />
+
+        <Button
+            android:text="UNSAFE ROUTE"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/Unsafe"
+            android:layout_weight="1"
+            android:background="@color/colorAccent"
+            android:layout_alignParentTop="true"
+            android:layout_toEndOf="@+id/Safe" />
+
+        <Button
+            android:text="REPORT"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/btn_report"
+            android:layout_weight="1"
+            android:background="@color/cast_intro_overlay_button_background_color"
+            android:layout_alignParentEnd="true" />
+    </RelativeLayout>
+
+    <fragment xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:map="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:id="@+id/map"
+        android:name="com.google.android.gms.maps.SupportMapFragment"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context="com.example.safelight.MainActivity"/>
+
+</LinearLayout>
+
+
+

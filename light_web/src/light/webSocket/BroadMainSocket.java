@@ -14,26 +14,61 @@ import javax.websocket.server.ServerEndpoint;
 @ServerEndpoint("/echo.do")
 public class BroadMainSocket {
 
-	private static Set<Session> clients = Collections 
+	public static  BroadMainSocket instance;
+	public  BroadMainSocket(){
+		instance=this;
+	}
+	
+
+	public BroadMainSocket getInstance () {
+		
+		return instance;
+	}
+	
+	private static Set<Session> webClients = Collections 
 			 			.synchronizedSet(new HashSet<Session>()); 
+	
+	private static Set<Session> clients = Collections 
+ 			.synchronizedSet(new HashSet<Session>()); 
+
 	@OnMessage
 	public void onMessage(String message, Session session) throws IOException { 
-		 		System.out.println(message); 
-		 		synchronized (clients) { 
-		 			// Iterate over the connected sessions 
-		 			// and broadcast the received message 
-		 			//여기서 파싱...........
-		 			for (Session client : clients) { 
-		 				if (!client.equals(session)) { 
-		 					client.getBasicRemote().sendText("parsing::"+message); 
-		 				} 
-		 			} 
-		 		} 
+		 		/*System.out.println(message); 
+		 		
+		 		*/
+		 		if(message.equals("web"))
+		 		{
+		 			webClients.add(session);
+
+		 		}
+		 		else
+		 		{
+			 		synchronized (webClients) { 
+			 			
+			 			if(session == null)
+				 		{	
+					 		for (Session client : webClients) 
+					 		{ 
+					 			client.getBasicRemote().sendText(message); 	
+					 		}
+				 		}
+			 			else
+			 			{
+			 				//명근씨 코딩
+			 				//모바일 1대1 통신 후
+			 				//여기서 서버로 보내고
+			 		 		for (Session client : webClients) 
+					 		{ 
+					 			client.getBasicRemote().sendText(message); 	
+					 		}
+			 				
+			 			}		
+			 		}
+		 		}
 		 	} 
 	@OnOpen 
 	 	public void onOpen(Session session) { 
 	 		// Add session to the connected sessions set 
-		
 	 		System.out.println("wServer:"+session); 
 	 		clients.add(session); 
 	 	} 
@@ -41,10 +76,9 @@ public class BroadMainSocket {
 	@OnClose 
 	 	public void onClose(Session session) { 
 	 		// Remove session from the connected sessions set 
-	 		clients.remove(session); 
+	
+			webClients.remove(session); 
+	 		clients.remove(session);
 	 	} 
-
-
-
 
 }

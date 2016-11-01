@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="SqlGridMapper">
+
+
+	<select id="selectLamp" parameterType="java.util.HashMap"
+		resultType="light.vo.LampVo">
+		SELECT * FROM street_lamp.test_street_lamp_state
+
+		<if test="student != null">
+			WHERE student = #{student}
+		</if>
+	</select>
+
+	<insert id="insertLamp" parameterType="light.vo.LampVo">
+		INSERT INTO
+		street_lamp.test_street_lamp_state
+		(beacon_addr,
+		beacon_id,
+		location,
+		date_time,
+		power_off,
+		abnormal_blink,
+		short_circuit,
+		lamp_failure,
+		lamp_state,
+		illumination,
+		x,
+		y) VALUES
+		(#{beacon_addr},
+		#{beacon_id},
+		#{location},
+		#{date_time},
+		#{power_off},
+		#{abnormal_blink},
+		#{short_circuit},
+		#{lamp_failure},
+		#{lamp_state},
+		#{illumination},
+		#{x},
+		#{y})
+	</insert>
+	<update id="updateLamp" parameterType="light.vo.LampVo">
+		UPDATE
+		street_lamp.test_street_lamp_state SET
+		beacon_addr=#{beacon_addr},
+		beacon_id=#{beacon_id},
+		location=#{location},
+		date_time=#{date_time},
+		power_off=#{power_off},
+		abnormal_blink=#{abnormal_blink},
+		short_circuit=#{short_circuit},
+		lamp_failure=#{lamp_failure},
+		lamp_state=#{lamp_state}
+		WHERE id=#{id}
+	</update>
+	<delete id="deleteLamp" parameterType="light.vo.LampVo">
+		DELETE FROM
+		street_lamp.test_street_lamp_state
+		WHERE id=#{id}
+	</delete>
+
+
+	<select id="selectHistory" parameterType="light.vo.HistoryVo"
+		resultType="light.vo.HistoryVo">
+		SELECT * FROM street_lamp.test_tb_failure_history
+		<if test="failure_type != null">
+			WHERE beacon_addr = #{beacon_addr}
+			AND beacon_id = #{beacon_id}
+			AND location = #{location}
+			AND failure_reason_id = #{failure_reason_id}
+			AND failure_type = #{failure_type}
+			AND repair = #{repair}
+			AND recent = #{recent}	
+		</if>
+	</select>
+
+
+	<select id="checkHistory" parameterType="light.vo.HistoryVo"
+		resultType="light.vo.HistoryVo">
+		SELECT * FROM street_lamp.test_tb_failure_history
+		<if test="beacon_addr != null">
+			WHERE beacon_addr = #{beacon_addr}
+			AND beacon_id = #{beacon_id}
+			AND location = #{location}
+			AND failure_type = #{failure_type}
+			AND repair = #{repair}
+			AND recent = #{recent}
+		</if>
+	</select>
+
+
+
+
+	<insert id="insertHistory" parameterType="light.vo.HistoryVo">
+		INSERT INTO
+		street_lamp.test_tb_failure_history
+		(beacon_addr,
+		beacon_id,
+		location,
+		date_time,
+		failure_reason_text,
+		failure_reason_id,
+		repair,
+		recent,
+		failure_type)
+		VALUES
+		(#{beacon_addr},
+		#{beacon_id},
+		#{location},
+		#{date_time},
+		#{failure_reason_text},
+		#{failure_reason_id},
+		#{repair},
+		#{recent},
+		#{failure_type});
+	</insert>
+	<update id="updateHistory" parameterType="light.vo.HistoryVo">
+		UPDATE
+		street_lamp.test_tb_failure_history SET
+		repair_date_time = #{repair_date_time},
+		repair = #{repair},
+		recent = #{recent}
+		WHERE id=#{id}
+	</update>
+	<delete id="deleteHistory" parameterType="light.vo.HistoryVo">
+		DELETE FROM 
+		street_lamp.test_tb_failure_history 
+		WHERE id=#{id}
+	</delete>
+	<select id="selectNeedLocation" parameterType="java.util.HashMap"
+		resultType="light.vo.NeedLocationVo">
+        	SELECT * FROM street_lamp.test_street_need_location
+		<if test="student != null">
+			WHERE student = #{student}
+		</if>
+	</select>
+
+
+
+	<!-- alter table test_street_lamp_state modify id int not null AUTO_INCREMENT -->
+</mapper>

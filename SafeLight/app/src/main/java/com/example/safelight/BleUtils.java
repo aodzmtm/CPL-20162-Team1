@@ -10,11 +10,44 @@ import android.util.Log;
  */
 public class BleUtils {
 
+
+
     public BleUtils()
     {
 
     }
 
+
+    // byte[] to char[] method
+    public char[] ByteArrtoCharArr(byte[] a){
+        StringBuilder buffer = new StringBuilder();
+        for(int i = 0; i < a.length;i++){
+            buffer.append(a[i]);
+        }
+        char[] b = buffer.toString().toCharArray();
+        return b;
+    }
+
+    // String[] to char[] method
+    public char[] StringArrtoCharArr(String[] s){
+
+        int length = 0;
+        for (int i = 0; i < s.length; i++) {
+            for (int j = 0; j < s[i].length(); j++) {
+                length++;
+            }
+        }
+
+        char [] c = new char[length];
+        int k = 0;
+        for (int i = 0; i < s.length; i++) {
+            for (int j = 0; j < s[i].length(); j++) {
+                c[k] = s[i].charAt(j);
+                k++;
+            }
+        }
+        return c;
+    }
 
     /*
        byte[]를 String 타입으로 변환

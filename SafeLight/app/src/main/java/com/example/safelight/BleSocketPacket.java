@@ -44,7 +44,7 @@ public class BleSocketPacket {
         +------------+-------------+-------+-------+
      */
 
-    public String makeRequestMsg(int cmd, String devNum, String Date, String State)
+    public String makeRequestMsg(int cmd, String devNum, String Date)
     {
         String msg=null;
 
@@ -55,8 +55,20 @@ public class BleSocketPacket {
 
             Log.i("MSG",msg);
         }
+        else
+        {
+            //에러 확인용
+            Log.i("BleSocketPacket","makeRequst Msg unexpected cmd"+cmd);
+        }
+        return msg;
+    }
+
+    public String makeRequestMsg(int cmd, String devNum, String Date, String State)
+    {
+        String msg=null;
+
         //서버에 BEACON 상태 전송
-        else if(cmd == COMMAND_REQUEST_ST)
+        if(cmd == COMMAND_REQUEST_ST)
         {
             msg = STX + Date + COMMAND_REQUEST_ST + devNum + CDMA  + State + ETX;
                    // String.valueOf(major) + ";" + String.valueOf(minor);        // devNum : ID

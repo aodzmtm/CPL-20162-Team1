@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--INFO DIALOG에 사용되는 XML!-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="oval">
+    <solid android:color="@android:color/white"/>
+    <stroke
+        android:width="4dp"
+        android:color="#87CEFA"
+        />
+     </shape>

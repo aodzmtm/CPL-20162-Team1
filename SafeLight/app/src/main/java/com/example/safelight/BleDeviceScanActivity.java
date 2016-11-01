@@ -1,5 +1,6 @@
 package com.example.safelight;
 
+import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothManager;
@@ -11,7 +12,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.preference.PreferenceManager;
-import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -22,7 +22,9 @@ import android.widget.Toast;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-public class BleDeviceScanActivity extends ActionBarActivity {
+import static com.example.safelight.R.layout.activity_ble_device_scan;
+
+public class BleDeviceScanActivity extends Activity {
     /*
         Constant Variables
      */
@@ -77,7 +79,7 @@ public class BleDeviceScanActivity extends ActionBarActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_ble_device_scan);
+        setContentView(activity_ble_device_scan);
 
         mBleUtils = new BleUtils();                             //BleUtils: Byte 타입 변환과 거리 계산.
         mArrayListBleDevice = new ArrayList<BleDeviceInfo>();   //BleDeviceInfo : Divice 정보, Set, get, 거리계산, Address 같은지 검사
@@ -103,11 +105,11 @@ public class BleDeviceScanActivity extends ActionBarActivity {
 //        logExcelFile = new LogExcelFile();
 //        logExcelFile.init();
 
-        // activity_ble_device_scan.xml 문서의 listview
-        mBleListView = (ListView)findViewById(R.id.listview_blescan);
-        mBleDeviceListAdapter = new BleDeviceListAdapter(this, R.layout.ble_device_row,
-                mArrayListBleDevice, mItemMap);
-        mBleListView.setAdapter(mBleDeviceListAdapter);
+// //        activity_ble_device_scan.xml 문서의 listview
+//        mBleListView = (ListView)findViewById(R.id.listview_blescan);
+//        mBleDeviceListAdapter = new BleDeviceListAdapter(this, R.layout.ble_device_row,
+//                mArrayListBleDevice, mItemMap);
+//        mBleListView.setAdapter(mBleDeviceListAdapter);
 
 
         // mClientThread는 서버와 연결.

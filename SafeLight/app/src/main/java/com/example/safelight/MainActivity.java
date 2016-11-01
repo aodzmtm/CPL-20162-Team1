@@ -23,6 +23,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageButton;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -41,10 +42,12 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 
     private GoogleMap mMap;
 
-    Button mBtnScan;
-    Button mBtnMap;
-    Button mBtnStopService;
-    Button mBtnReport;
+    ImageButton mBtnScan;
+    ImageButton mBtnRoute;
+    ImageButton mBtnRefresh;
+    ImageButton mBtnReport;
+    ImageButton mBtnInfo;
+    private CustomDialogFragment mCustomDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,17 +60,21 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
         mapFragment.getMapAsync(this);
 
 
-        mBtnScan = (Button)findViewById(R.id.btn_scan);
+        mBtnScan = (ImageButton) findViewById(R.id.btn_Scan);
         mBtnScan.setOnClickListener(mClickListener);
 
-        mBtnMap = (Button)findViewById(R.id.btn_active_service);
-        mBtnMap.setOnClickListener(mClickListener);
+        mBtnRoute = (ImageButton) findViewById(R.id.btn_Route);
+        mBtnRoute.setOnClickListener(mClickListener);
 
-        mBtnStopService = (Button)findViewById(R.id.btn_stop_service);
-        mBtnStopService.setOnClickListener(mClickListener);
+        mBtnRefresh = (ImageButton) findViewById(R.id.btn_Refresh);
+        mBtnRefresh.setOnClickListener(mClickListener);
 
-        mBtnReport = (Button)findViewById(R.id.btn_report);
+        mBtnReport = (ImageButton) findViewById(R.id.btn_Report);
         mBtnReport.setOnClickListener(mClickListener);
+
+        mBtnInfo = (ImageButton) findViewById(R.id.btn_Info);
+        mBtnInfo.setOnClickListener(mClickListener);
+
     }
 
     @Override
@@ -100,18 +107,23 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
         public void onClick(View v) {
             switch(v.getId())
             {
-                case R.id.btn_scan:
+                case R.id.btn_Scan:
                     startActivity(new Intent(MainActivity.this, BleDeviceScanActivity.class));
                     finish();
                     break;
-                case R.id.btn_active_service:
+                case R.id.btn_Route:
                     activateService(v);
                     finish();
                     break;
-                case R.id.btn_stop_service:
+                case R.id.btn_Refresh:
                     break;
-                case R.id.btn_report:
+                case R.id.btn_Report:
                     alertShow(v);
+                    break;
+                case R.id.btn_Info:
+                    mCustomDialog = new CustomDialogFragment();
+                    mCustomDialog.show(getFragmentManager(),"Info");
+                    break;
                 default:
                     break;
             }
@@ -277,6 +289,9 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
         }
     }
 
+    //********************************//
+    //       어두운길 신고            //
+    //********************************//
     public static class MyDialogFragment extends DialogFragment{
         public static MyDialogFragment newInstance(){
             return new MyDialogFragment();
@@ -295,4 +310,35 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
             return builder.create();
         }
     }
+    private View.OnClickListener Listener = new View.OnClickListener() {
+        public void onClick(View v) {
+            mCustomDialog.dismiss();
+        }
+    };
+
+    //********************************//
+    //          Info Dial             //
+//    //********************************//
+//    public class InfoDial extends DialogFragment
+//    {
+//        Context mContext = getApplicationContext();
+//        Dialog dialog = new Dialog(mContext);
+//        dialog.setContentView(R.layout.custom_dialog);
+//        dialog.setTitle("커스텀 다이얼로그");
+//        TextView text = (TextView) dialog.findViewById(R.id.text);
+//        text.setText("Hello, this is a custom dialog!");
+//        ImageView image = (ImageView) dialog.findViewById(R.id.image);
+//        image.setImageResource(R.drawable.icon)
+//        Dialog dialog = new Dialog(MainActivity.this);
+//        dialog.setContentView(R.layout);
+//        dialog.setTitle("Custom Dialog");
+//
+//        TextView tv = (TextView) dialog.findViewById(R.id.text);
+//        tv.setText("Hello. This is a Custom Dialog !");
+//
+//        ImageView iv = (ImageView) dialog.findViewById(R.id.image);
+//        iv.setImageResource(R.drawable.suji);
+//
+//        dialog.show();
 }
+

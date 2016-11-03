@@ -14,11 +14,12 @@ import org.json.simple.parser.ParseException;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-import dateFormat.MakeDateTimeFormat;
+import light.dateFormat.MakeDateTimeFormat;
 import light.common.JsonFactory;
 import light.database.MyBatisSessionFactory;
 import light.vo.HistoryVo;
 import light.vo.LampVo;
+import light.vo.NeedLocationVo;
 import light.webSocket.BroadMainSocket;
 
 @Controller
@@ -243,6 +244,30 @@ public class MobileController {
 			bt.getInstance().onMessage("보안등이 수정 되었습니다.", null);
 		}
 
+	}
+	
+	@RequestMapping("/mobileDanger")
+	public void mobileDanger(HttpServletRequest request, HttpServletResponse response) throws IOException{
+		SqlSession session = MyBatisSessionFactory.getSqlSession();
+		request.setCharacterEncoding("UTF-8");
+		System.out.println("1111");
+		double x = Double.parseDouble(request.getParameter("x"));
+		double y = Double.parseDouble(request.getParameter("y"));
+		
+		NeedLocationVo needLocationVo = new NeedLocationVo();
+		needLocationVo.setX(x);
+		needLocationVo.setY(y);
+		
+		System.out.println(x);
+		System.out.println(y);
+		
+//		try{
+//			session.insert("SqlMobileMapper.insertNeedLocation", needLocationVo);
+//		}
+//		finally {
+//			session.commit();
+//			session.close();
+//		}
 	}
 	
 }

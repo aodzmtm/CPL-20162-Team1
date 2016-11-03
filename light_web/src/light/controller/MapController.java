@@ -16,7 +16,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import dateFormat.MakeDateTimeFormat;
+import light.dateFormat.MakeDateTimeFormat;
 import light.common.JsonFactory;
 import light.database.MyBatisSessionFactory;
 import light.vo.HistoryVo;
@@ -246,7 +246,7 @@ public class MapController {
 
 			session.commit();
 			session.close();
-			bt.getInstance().onMessage("보안등이 추가 되었습니다.", null);
+			bt.getInstance().onMessage(lampVo.getLocation()+" 보안등이 추가 되었습니다.", null);
 		}
 
 	}
@@ -465,7 +465,7 @@ public class MapController {
 		} finally {
 			session.commit();
 			session.close();
-			bt.getInstance().onMessage("보안등이 수정 되었습니다.", null);
+			bt.getInstance().onMessage(lampVo.getLocation()+" 보안등이 수정 되었습니다.", null);
 		}
 
 	}
@@ -479,7 +479,7 @@ public class MapController {
 		LampVo lampVo = new LampVo();
 		JsonFactory fac = new JsonFactory();
 		String json = fac.readJSONStringFromRequestBody(request);
-
+		
 		try {
 			JSONParser jsonParser = new JSONParser();
 			// JSON데이터를 넣어 JSON Object 로 만들어 준다.
@@ -493,7 +493,7 @@ public class MapController {
 				JSONObject lampVoObject = (JSONObject) lampInfoArray.get(i);
 				// JSON name으로 추출
 				lampVo.setId(Integer.parseInt(lampVoObject.get("id").toString()));
-
+				lampVo.setLocation(lampVoObject.get("location").toString());
 			}
 
 		} catch (ParseException e) {
@@ -504,7 +504,7 @@ public class MapController {
 		try {
 
 			session.delete("SqlMapMapper.deleteLamp", lampVo);
-			bt.getInstance().onMessage("보안등이 삭제 되었습니다.", null);
+			bt.getInstance().onMessage(lampVo.getLocation()+" 보안등이 삭제 되었습니다.", null);
 
 		} finally {
 			session.commit();

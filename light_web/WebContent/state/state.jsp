@@ -33,7 +33,8 @@
 	<script type="text/javascript">
 	function lampInfoStateConnect(){
 		var textarea = document.getElementById("messageWindow");
-		var webSocket = new WebSocket('ws://127.0.0.1:8080/light_web/echo.do');
+		
+		var webSocket = new WebSocket("ws://"+location.host+"/light_web/echo.do");
 		var inputMessage = document.getElementById('inputMessage');
 		webSocket.onerror = function(event) {
 			onError(event)

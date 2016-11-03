@@ -1,4 +1,4 @@
-package dateFormat;
+package light.dateFormat;
 
 public class MakeDateTimeFormat {
 

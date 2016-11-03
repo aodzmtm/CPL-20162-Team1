@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 
-import dateFormat.MakeDateTimeFormat;
+import light.dateFormat.MakeDateTimeFormat;
 import light.common.JsonFactory;
 import light.database.MyBatisSessionFactory;
 import light.vo.HistoryVo;

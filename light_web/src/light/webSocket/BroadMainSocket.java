@@ -3,10 +3,10 @@ package light.webSocket;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import javax.websocket.OnClose;
+import javax.websocket.OnError;
 import javax.websocket.OnMessage;
 import javax.websocket.OnOpen;
 import javax.websocket.Session;
@@ -22,8 +22,8 @@ import light.vo.ReplyVO;
 import light.vo.EventVO;
 import light.vo.HistoryVo;
 import light.vo.LampVo;
-import parsing.EventParsing;
-import parsing.RequestParsing;
+import light.parsing.EventParsing;
+import light.parsing.RequestParsing;
 
 
 @ServerEndpoint("/echo.do")
@@ -50,6 +50,7 @@ public class BroadMainSocket {
 
 	@OnMessage
 	public void onMessage(String message, Session session) throws IOException { 
+//				System.out.println(message);
 		
 		 		if(message.equals("web"))
 		 		{
@@ -80,7 +81,7 @@ public class BroadMainSocket {
 		 					
 		 						// 비컨 주소로 아이디 읽어오기.
 		 						String beacon_id= (String)sqlSession.selectOne("ParsingMapper.selectBeaconID", requestVO);
-		 						System.out.println(beacon_id);
+		 						//System.out.println(beacon_id);
 		 						
 		 						if(beacon_id != null){
 		 							ReplyVO replyVO = new ReplyVO();
@@ -127,15 +128,17 @@ public class BroadMainSocket {
 		 							if(occurModification(lampVO, eventVO)){
 		 								for (Session client : webClients) 
 		 						 		{ 
-		 						 			client.getBasicRemote().sendText("새로운 상태 보고"
-		 						 					+ "\nbeacon_id: " + eventVO.getBeacon_id()
-		 						 					+ "\npower_off: " + eventVO.getPower_off()
-		 						 					+ "\nabnormal_blink: " + eventVO.getAbnormal_blink()
-		 						 					+ "\nshort_circuit: " + eventVO.getShort_circuit()
-		 						 					+ "\nlamp_failure: " + eventVO.getLamp_failure()
-		 						 					+ "\nlamp_state: " + eventVO.getLamp_state()
-		 						 					+ "\nillumination: " + eventVO.getIllumination()
-		 						 					);
+//		 						 			client.getBasicRemote().sendText("새로운 상태 보고"
+//		 						 					+ "\nbeacon_id: " + eventVO.getBeacon_id()
+//		 						 					+ "\npower_off: " + eventVO.getPower_off()
+//		 						 					+ "\nabnormal_blink: " + eventVO.getAbnormal_blink()
+//		 						 					+ "\nshort_circuit: " + eventVO.getShort_circuit()
+//		 						 					+ "\nlamp_failure: " + eventVO.getLamp_failure()
+//		 						 					+ "\nlamp_state: " + eventVO.getLamp_state()
+//		 						 					+ "\nillumination: " + eventVO.getIllumination()
+//		 									
+//		 						 					);
+		 									client.getBasicRemote().sendText(lampVO.getLocation()+" 보안등이 수정되었습니다.");
 		 						 		}
 		 								
 		 								insertHistory(lampVO, eventVO);
@@ -151,7 +154,8 @@ public class BroadMainSocket {
 		 	} 
 	@OnOpen 
 	 	public void onOpen(Session session) { 
-	 		// Add session to the connected sessions set 
+	 		// Add session to the connected sessions set
+			System.out.println(session.getRequestURI().toString()+"\n");
 	 		System.out.println("wServer:"+session); 
 	 		clients.add(session);
 	 	} 
@@ -162,6 +166,11 @@ public class BroadMainSocket {
 	 		webClients.remove(session); 
 	 		clients.remove(session);
 	 	}
+	
+	@OnError
+		public void onError(Session session, Throwable throwable){
+	
+	}
 	
 	public boolean occurModification(LampVo lampVo, EventVO eventVo){
 		if(lampVo.getPower_off().charAt(0) != eventVo.getPower_off())
@@ -185,7 +194,12 @@ public class BroadMainSocket {
 		
 		historyVo.setBeacon_addr(lampVo.getBeacon_addr());
 		historyVo.setBeacon_id(eventVo.getBeacon_id());
+		historyVo.setLocation(lampVo.getLocation());
 		historyVo.setDate_time(eventVo.getDate_time());
+//		System.out.println(historyVo.getLocation());
+//		System.out.println(historyVo.getBeacon_id());
+//		System.out.println(historyVo.getBeacon_addr());
+//		System.out.println(historyVo.getDate_time());
 		
 		try{
 			if (eventVo.getPower_off() == '1') {

@@ -13,7 +13,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import dateFormat.MakeDateTimeFormat;
+import light.dateFormat.MakeDateTimeFormat;
 import light.database.MyBatisSessionFactory;
 import light.vo.HistoryVo;
 import light.vo.LampVo;
@@ -55,18 +55,19 @@ public class GridController {
 		String idstr = request.getParameter("idstr");
 		System.out.println(idstr);
 		String[] idstrs = idstr.split("/");
-
+		
 		try {
 			for (int i = 0; i < idstrs.length; i++) {
 				int id = Integer.parseInt(idstrs[i]);
 				lampVo.setId(id);
+				List<LampVo> list = session.selectList("SqlGridMapper.selectLamp",lampVo);
 				session.delete("SqlGridMapper.deleteLamp", lampVo);
-
+				bt.getInstance().onMessage(list.get(0).getLocation()+" 보안등이 삭제 되었습니다.", null);
 			}
 		} finally {
 			session.commit();
 			session.close();
-			bt.getInstance().onMessage("보안등이 삭제 되었습니다.", null);
+			
 		}
 		return true;
 	}
@@ -285,10 +286,10 @@ public class GridController {
 					}
 				}
 
-				bt.getInstance().onMessage("보안등이 수정 되었습니다.", null);
+				bt.getInstance().onMessage(lampVo.getLocation()+" 보안등이 수정 되었습니다.", null);
 			} else {
 				session.delete("SqlGridMapper.deleteLamp", lampVo);
-				bt.getInstance().onMessage("보안등이 삭제 되었습니다.", null);
+				bt.getInstance().onMessage(lampVo.getLocation()+" 보안등이 삭제 되었습니다.", null);
 			}
 		} finally {
 			session.commit();
@@ -360,7 +361,7 @@ public class GridController {
 		} finally {
 			session.commit();
 			session.close();
-			bt.getInstance().onMessage("보안등 고장내역 및 수리내역이 삭제 되었습니다.", null);
+			bt.getInstance().onMessage(" 보안등 고장내역 및 수리내역이 삭제 되었습니다.", null);
 		}
 		return true;
 	}
@@ -386,10 +387,10 @@ public class GridController {
 		try {
 			if (repair != null) {
 				session.update("SqlGridMapper.updateHistory", historyVo);
-				bt.getInstance().onMessage("보안등 고장내역 및 수리내역이 수정 되었습니다.", null);
+				bt.getInstance().onMessage(" 보안등 고장내역 및 수리내역이 수정 되었습니다.", null);
 			} else {
 				session.delete("SqlGridMapper.deleteHistory", historyVo);
-				bt.getInstance().onMessage("보안등 고장내역 및 수리내역이 삭제되었습니다.", null);
+				bt.getInstance().onMessage(" 보안등 고장내역 및 수리내역이 삭제되었습니다.", null);
 			}
 		} finally {
 			session.commit();

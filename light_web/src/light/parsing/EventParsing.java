@@ -1,4 +1,4 @@
-package parsing;
+package light.parsing;
 
 import light.vo.EventVO;
 

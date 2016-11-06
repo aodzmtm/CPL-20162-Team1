@@ -230,7 +230,7 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(eng_9, 17));              // 배율
 
         // 구글맵 내에 마커 찍기
-        //print_Marker(mMap);
+        print_Marker(mMap);
     }
 
     // 백그라운드 서비스 실행

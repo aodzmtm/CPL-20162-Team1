@@ -4,15 +4,22 @@
 <mapper namespace="SqlGridMapper">
 
 
-	<select id="selectLamp" parameterType="java.util.HashMap"
+	<!-- <select id="selectLamp" parameterType="java.util.HashMap"
 		resultType="light.vo.LampVo">
 		SELECT * FROM street_lamp.test_street_lamp_state
 
 		<if test="student != null">
 			WHERE student = #{student}
 		</if>
-	</select>
+	</select> -->
+	<select id="selectLamp" parameterType="light.vo.LampVo"
+		resultType="light.vo.LampVo">
+		SELECT * FROM street_lamp.test_street_lamp_state
 
+		<if test="id != null">
+			WHERE id = #{id}
+		</if>
+	</select>
 	<insert id="insertLamp" parameterType="light.vo.LampVo">
 		INSERT INTO
 		street_lamp.test_street_lamp_state

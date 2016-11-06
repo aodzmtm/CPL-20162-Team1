@@ -134,5 +134,14 @@
 			WHERE student = #{student}
 		</if>
 	</select>
+	
+	<insert id="insertNeedLocation" parameterType="light.vo.NeedLocationVo">
+		INSERT INTO street_lamp.test_street_need_location
+		(x,
+		y) VALUES
+		(#{x},
+		#{y})
+	</insert>
+	
 
 </mapper>

@@ -21,5 +21,6 @@
         <mapper resource="mybatis-GraphMapper.xml"/>
         <mapper resource="mybatis-MobileMapper.xml"/>
         <mapper resource="mybatis-UserMapper.xml"/>
+        <mapper resource="mybatis-ParsingMapper.xml"/>
     </mappers>
 </configuration>

@@ -20,7 +20,7 @@
 					<!-- 		사용자 이미지가 뿌려지는 곳 -->
 
 				</div> <input id="file" type="file" size="30"
-				style='width: 0px; height: 0px;'
+				style="display:none;"
 				onchange="previewImage(this,'previewId')" />
 	</td>
 </tr>

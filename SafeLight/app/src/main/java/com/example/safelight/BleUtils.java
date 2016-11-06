@@ -1,6 +1,6 @@
 package com.example.safelight;
 
-import android.util.Log;
+import java.util.BitSet;
 
 /**
  * Created by changsu on 2015-03-28.
@@ -10,13 +10,14 @@ import android.util.Log;
  */
 public class BleUtils {
 
+    public static String HEX_CHARACTERS="0123456789ABCDEF";
+
 
 
     public BleUtils()
     {
 
     }
-
 
     // byte[] to char[] method
     public char[] ByteArrtoCharArr(byte[] a){
@@ -28,7 +29,9 @@ public class BleUtils {
         return b;
     }
 
-    // String[] to char[] method
+
+
+    // String[] to char[]
     public char[] StringArrtoCharArr(String[] s){
 
         int length = 0;
@@ -49,9 +52,8 @@ public class BleUtils {
         return c;
     }
 
-    /*
-       byte[]를 String 타입으로 변환
-    */
+
+    // byte[] to string
     public String ByteArrayToString(byte[] scanRecord)
     {
         /*
@@ -68,53 +70,102 @@ public class BleUtils {
         return hex.toString();
     }
 
-    /*
-        Conversion byte to integer value
-        byte는 signed 값이므로 0xff로 and 연산을 수행함
-     */
-    public int byteToInt(byte value1, byte value2)
-    {
-        return ((value1 & 0xff) << 8 | (value2 & 0xff));
+
+    // hexadecimal to decimal
+    public static int hex2dec(String hexValue) {
+        hexValue = hexValue.toUpperCase();
+        int decimalResult = 0;
+
+        for (int i = 0; i < hexValue.length(); i++) {
+            char digit = hexValue.charAt(i);
+            int digitValue = HEX_CHARACTERS.indexOf(digit);
+            decimalResult = decimalResult * 16 + digitValue;
+        }
+        return decimalResult;
     }
 
-    /*
-        거리 계산 공식은 자료 조사 후 재수정 해야 됨
-     */
-    public double getDistance(int rssi, int mPower)
-    {
-        double distance = 0.0;  // 단위는 meter
-
-        if(mPower == 0)
-            mPower = -1;
-
-        /*
-            RSSI = Measured Power - 10 * n * log(distance)
-            n = 2 ( in free space)
-
-            distance = 10 ^ ((Measured Power) - RSSI) / (10 * 2));
-         */
-
-        distance = Math.pow(10, ((double)mPower - rssi) / (10 * 2));
-        distance = Math.round(distance * 100) / 100.0;
-
-        Log.d("Util", "distance: " + distance);
-        return distance;
+    // int to int array to string
+    public static String dec2str(int decValue){
+        int q = 0, r = decValue % 10;
+        if(decValue>=10){
+            q = decValue / 10;
+        }
+        int[] res = new int[2];
+        res[0] = q;
+        res[1]= r;
+        StringBuilder builder = new StringBuilder();
+        for (int i : res) {
+            builder.append(i);
+        }
+        String strValue = builder.toString();
+        return strValue;
     }
 
-    /*
-        거리계산 - 2015.5.15 Ver
+    // 상태정보 1byte를 bitset으로 변환
+    public static int[] byte2bitset(byte b) {
+        byte[] temp = new byte[]{b};
+        BitSet bitset = BitSet.valueOf(temp);
+        int[] result = new int[bitset.length()];
+        for (int i=0; i<bitset.length(); ++i) {
+            result[i] = Boolean.compare(bitset.get(i),false);
+        }
 
-        아래링크를 참조하여 작성함
-        https://medium.com/truth-labs/beacon-tracking-with-node-js-and-raspberry-pi-794afa880318
-     */
-    public double getDistance_20150515(int rssiValue, int txPower)
-    {
-        if (rssiValue == 0)
-            return -1.0;
-        double ratio = rssiValue * 1.0 / txPower;
-        if (ratio < 1.0)
-            return Math.pow(ratio, 10);
+        return result;
+    }
 
-        return (0.89976) * Math.pow(ratio, 7.7095) + 0.111;
+    // 상태정보 파싱하는 함수. input: int[], output: string
+    public static String parseState(int[] intArray){
+        for (int k = 0; k < intArray.length/2; k++) {
+            int temp = intArray[k];
+            intArray[k] = intArray[intArray.length-(1+k)];
+            intArray[intArray.length-(1+k)] = temp;
+        }
+        StringBuilder temp = new StringBuilder(intArray.length);
+
+        for(int i=0; i< intArray.length; i++){
+            if(i==7){
+                break;
+            }
+            if(i==1){                           // 이상점등
+                if(intArray[i]==1){
+                    temp.append(String.format("%d", 1));
+                }
+            }
+            else if(i==2){                      // 이상소등
+                if(intArray[i]==1){
+                    temp.append(String.format("%d", 2));
+                }
+                else{
+                    if(intArray[i-1]==0){
+                        temp.append(String.format("%d", 0));
+                    }
+                }
+            }
+            else if(i==4){                      // 램프
+                if(intArray[i]==1){
+                    temp.append(String.format("%d", 1));
+                }
+            }
+            else if(i==5){                      // 안정기
+                if(intArray[i]==1){
+                    if(intArray[i-1]==1){
+                        temp.append(String.format("%d", 3));
+                    }
+                    else{
+                        temp.append(String.format("%d", 2));
+                    }
+                }
+                else{
+                    if(intArray[i-1]==0){
+                        temp.append(String.format("%d", 0));
+                    }
+                }
+            }
+            else{
+                temp.append(String.format("%d", intArray[i]));
+            }
+        }
+        String result = temp.toString();
+        return result;
     }
 }

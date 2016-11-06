@@ -10,8 +10,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
-import android.widget.Button;
-import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -83,42 +81,6 @@ public class BleDeviceListAdapter extends BaseAdapter {
             convertView = mInflater.inflate(mLayout, parent, false);
         }
 
-
-        TextView txtUuid = (TextView)convertView.findViewById(R.id.text_uuid);
-        txtUuid.setText("UUID: " + mBleDeviceInfoArrayList.get(position).proximityUuid);
-
-        TextView txtBdName = (TextView)convertView.findViewById(R.id.text_bd_name);
-        txtBdName.setText("Device Name: " + mBleDeviceInfoArrayList.get(position).devName);
-
-        TextView txtBdAddress = (TextView)convertView.findViewById(R.id.text_bd_address);
-        txtBdAddress.setText("Dev Address: " + mBleDeviceInfoArrayList.get(position).devAddress);
-
-        TextView txtMajor = (TextView)convertView.findViewById(R.id.text_major);
-        txtMajor.setText("Major: " + String.valueOf(mBleDeviceInfoArrayList.get(position).major));
-
-        TextView txtMinor = (TextView)convertView.findViewById(R.id.text_minor);
-        txtMinor.setText("Minor: " + String.valueOf(mBleDeviceInfoArrayList.get(position).minor));
-
-        TextView txtRssi = (TextView)convertView.findViewById(R.id.text_rssi);
-        txtRssi.setText("RSSI: " + String.valueOf(mBleDeviceInfoArrayList.get(position).rssi) + " dbm");
-
-        TextView txtTxPower = (TextView)convertView.findViewById(R.id.text_txpower);
-        //txtTxPower.setText("Tx Power: " + String.valueOf(mBleDeviceInfoArrayList.get(position).measuredPower) + " dbm");
-        txtTxPower.setText("Tx Power: " + String.valueOf(mBleDeviceInfoArrayList.get(position).txPower) + " dbm");      // changsu
-
-        TextView txtDistance = (TextView)convertView.findViewById(R.id.text_distance);
-        txtDistance.setText("Distance: " + String.valueOf(mBleDeviceInfoArrayList.get(position).distance) + " m (" + String.format("%.2f", mBleDeviceInfoArrayList.get(position).distance2) + "m)");
-
-        TextView txtTimeout = (TextView)convertView.findViewById(R.id.text_timeout);
-        txtTimeout.setText("Timeout: " + String.valueOf(mBleDeviceInfoArrayList.get(position).timeout));
-
-        Button btnConnect = (Button)convertView.findViewById(R.id.button_connect);
-        btnConnect.setOnClickListener(new Button.OnClickListener() {
-            public void onClick(View v)
-            {
-                // connect 함수 연결
-            }
-        });
 
 
         return convertView;

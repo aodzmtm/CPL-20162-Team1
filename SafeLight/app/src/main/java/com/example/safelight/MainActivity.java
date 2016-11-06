@@ -19,13 +19,16 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.drawable.BitmapDrawable;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.preference.PreferenceManager;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.TaskStackBuilder;
+import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -49,6 +52,15 @@ import com.google.android.gms.maps.model.TileOverlayOptions;
 import com.google.android.gms.maps.model.TileProvider;
 
 import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.io.OutputStreamWriter;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.BitSet;
+import java.util.Date;
+import java.util.HashMap;
 
 public class MainActivity extends FragmentActivity implements OnMapReadyCallback {
 
@@ -62,8 +74,12 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
     private ClientThread mClientThread;
     private BleUtils mBleUtils;
 
+    private ArrayList<BleDeviceInfo> mArrayListBleDevice;
+    private HashMap<String, BleDeviceInfo> mItemMap;
+    private BleDeviceInfo mMaxRssiBeacon;
+
     // 컨스턴트
-    private static final String URL = "ws://ip:8080/light_web/lampinfo.do";
+    private static final String URL = "ws://192.168.0.4:8080/light_web/echo.do";
     private static final int REQUEST_ENABLE_BT = 1; // 블루투스 ON 요청 횟수
     private static final long SCAN_PERIOD = 1000;       // 10초동안 SCAN 과정을 수행함
     final static int MSG_RECEIVED_ACK = 0x100;
@@ -75,6 +91,7 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
     String bDate;
     String bState;
 
+    boolean isMarsh = Build.VERSION.SDK_INT >= Build.VERSION_CODES.M;
     boolean mScanning;
     public static String BEACON_UUID;
     public static  Boolean saveRSSI;
@@ -85,8 +102,12 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
     ImageButton mBtnRefresh;
     ImageButton mBtnReport;
     ImageButton mBtnInfo;
+    ImageButton mBtnActive;
+
     private CustomDialogFragment mCustomDialog;
 
+    //permission
+    private static final int MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 0;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -106,13 +127,19 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
         mClientThread = new ClientThread(mSocketHandler,MainActivity.this, URL);
         mClientThread.setDaemon(true);
         mClientThread.start();
-        // mClientThread.start();//서버로부터 메시지를 계속 받도록한다.
         mBleSocketPacket = new BleSocketPacket();
         mStatePacket = new Send_StatePacket();
 
+        mBleUtils = new BleUtils();
+        mItemMap = new HashMap<String, BleDeviceInfo>();
+        mMaxRssiBeacon = new BleDeviceInfo();
+        mArrayListBleDevice = new ArrayList<BleDeviceInfo>();
 
         mBtnScan = (ImageButton) findViewById(R.id.btn_Scan);
         mBtnScan.setOnClickListener(mClickListener);
+
+        mBtnActive = (ImageButton) findViewById(R.id.btn_service);
+        mBtnActive.setOnClickListener(mClickListener);
 
         mBtnRoute = (ImageButton) findViewById(R.id.btn_Route);
         mBtnRoute.setOnClickListener(mClickListener);
@@ -161,12 +188,15 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
                 case R.id.btn_Scan:
                     scanBLE();
                     break;
-                case R.id.btn_Route:
+                case R.id.btn_service://서비스작동
                     activateService(v);
+                    finish();
                     break;
-                case R.id.btn_Refresh:
+                case R.id.btn_Refresh://보안등정보동기화
                     break;
-                case R.id.btn_Report:
+                case R.id.btn_Route://신고된길만표시
+                    break;
+                case R.id.btn_Report://신고
                     alertShow(v);
                     break;
                 case R.id.btn_Info:
@@ -200,7 +230,7 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(eng_9, 17));              // 배율
 
         // 구글맵 내에 마커 찍기
-        print_Marker(mMap);
+        //print_Marker(mMap);
     }
 
     // 백그라운드 서비스 실행
@@ -420,14 +450,14 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
                     {
                         mStatePacket.remove_ID(bAddress);
                     }
-                    Log.d("Cleint", "msg: " + handlerText);
                     break;
             }
         }
     };
     private void scanBLE() {
+        mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         // 폰이 BLE 지원하지 않는 경우
-        if (!getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
+        if(mBluetoothAdapter == null){                          //if (!getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
             Toast.makeText(this, R.string.ble_not_supported, Toast.LENGTH_SHORT).show();
             finish();
         }
@@ -435,10 +465,16 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
         final BluetoothManager bluetoothManager =
                 (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
         mBluetoothAdapter = bluetoothManager.getAdapter();
+
         // 블루투스 ON 체크 및 요청
         if (mBluetoothAdapter == null || !mBluetoothAdapter.isEnabled()) {
             Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
             startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
+        }
+
+        if(isMarsh)
+        {
+            Permissioncheck();
         }
         scanLeDevice(true);
     }
@@ -465,18 +501,16 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
                 @Override
                 public void onLeScan(final BluetoothDevice device, int rssi,
                                      byte[] scanRecord) {
-                    // ble 디바이스 정보 추출 함수 콜
                     getBleDeviceInfoFromLeScan(device, rssi, scanRecord);
-
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            mBLeDeviceListAdapter.addDevice(device);
-                            mBLeDeviceListAdapter.notifyDataSetChanged();
+                            Log.i("onLeScan", device.toString());
                         }
                     });
                 }
             };
+
     private void getBleDeviceInfoFromLeScan(BluetoothDevice device, int rssi, byte[] scanRecord)
     {
         String devName;
@@ -498,9 +532,7 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 
         scanRecordAsHex = mBleUtils.ByteArrayToString(scanRecord);
 
-
         //24byte
-        Log.i("Recode",scanRecordAsHex);
         proximityUUID = String.format("%s-%s-%s-%s-%s",
                 scanRecordAsHex.substring(18, 26),
                 scanRecordAsHex.substring(26, 30),
@@ -508,16 +540,38 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
                 scanRecordAsHex.substring(34, 38),
                 scanRecordAsHex.substring(38, 50));
 
+        // 현재시간 받아오기
+        SimpleDateFormat mSimpleDateFormat = new SimpleDateFormat("yyyy:ss");
+        Date currentYear = new Date();
+        String mDate = mSimpleDateFormat.format ( currentYear );
 
-        // 날짜 파싱
-        byte[] tempDate = {scanRecord[25], scanRecord[26], scanRecord[27]};
-        bDate = String.valueOf(mBleUtils.ByteArrtoCharArr(tempDate));
+        // 년도
+        String bYear = mDate.substring(2,4);
+        // 월
+        int tempMonth = BleUtils.hex2dec(scanRecordAsHex.substring(51,52));
+        String bMonth = mBleUtils.dec2str(tempMonth);
+        // 일
+        int tempDay= BleUtils.hex2dec(scanRecordAsHex.substring(53,54));
+        String bDay = mBleUtils.dec2str(tempDay);
+        // 시
+        int tempHour = BleUtils.hex2dec(scanRecordAsHex.substring(55,56));
+        String bHour = mBleUtils.dec2str(tempHour);
+        // 분
+        int tempMin = BleUtils.hex2dec(scanRecordAsHex.substring(57,58));
+        String bMin = mBleUtils.dec2str(tempMin);
+        // 초
+        String bSec = mDate.substring(5,7);
 
-        byte[] tempState = {scanRecord[28], scanRecord[29]};
-        bState = String.valueOf(mBleUtils.ByteArrtoCharArr(tempState));
+        // 파싱한 최종 날짜 및 시간
+        bDate = bYear + bMonth + bDay + bHour + bMin + bSec;
+
+        // 비컨 상태정보
+        int tempState1 = mBleUtils.hex2dec(scanRecordAsHex.substring(58,60));
+        String tempState2 = scanRecordAsHex.substring(60,62);
+        bState = mBleUtils.parseState(mBleUtils.byte2bitset((byte)tempState1)) + tempState2;
+
+        // 파싱한 상태정보 값 설정
         mStatePacket.set_State(bState);
-
-        //       txPower = scanRecord[29];
 
         sendSocketMsg('R', bAddress, bDate, null);            // 메세지 전송
 
@@ -539,18 +593,15 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
     }
     // 비컨 정보 전송하는 소켓 함수
     private void sendSocketMsg(char cmd, String devNum, String Date, String State) {
-        Log.i("Check", devNum + ";" + Date);
         String sendMsg = mBleSocketPacket.makeRequestMsg(cmd, devNum, Date, State);
         if (sendMsg != null) {
             mClientThread.mSocket.send(sendMsg);
-
-            Log.d("Client", "sendmsg: " + sendMsg);
         }
     }
 
 
     //REPORT시 GPS 불러서 count 값 갱신
-    private void addCount(){
+    public void addCount(){
 
         int num=0;
         double sum, temp;
@@ -560,8 +611,8 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
         if (gps.isGetLocation()) {
         }
         // 좌표 받아오기
-        double x = gps.getLatitude();
-        double y = gps.getLongitude();
+        final double x = gps.getLatitude();
+        final double y = gps.getLongitude();
 
         for(int i=0;i<CoordInfo.mark.length-1;i++){
             sum = Math.pow(Math.abs(x-CoordInfo.mark[i][0]),2)+Math.pow(Math.abs(y-CoordInfo.mark[i][1]),2);
@@ -572,31 +623,90 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
             }
         }
         CoordInfo.setMarker(num);
+
+        //http post요청 코드
+        Thread thread = new Thread() {
+
+            @Override
+
+            public void run() {
+
+                String urlString = "http://herick.iptime.org:8080/light_web/mobileDanger.do";
+
+                InputStream myInputStream =null;
+                StringBuilder sb = new StringBuilder();
+                //adding some data to send along with the request to the server
+                sb.append("x="+x+"&y="+y);
+                URL url;
+                try {
+                    url = new URL(urlString);
+                    HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                    conn.setDoOutput(true);
+                    conn.setRequestMethod("POST");
+                    OutputStreamWriter wr = new OutputStreamWriter(conn
+                            .getOutputStream());
+                    // this is were we're adding post data to the request
+                    wr.write(sb.toString());
+                    wr.flush();
+                    myInputStream = conn.getInputStream();
+                    wr.close();
+                } catch (Exception e) {
+                    Toast.makeText(getApplicationContext(), "http 요청 실패", Toast.LENGTH_LONG).show();
+                    //handle the exception !
+                    //Log.d(TAG,e.getMessage());
+                }
+            }
+        };
+
+        thread.start();
+
+
+
     }
 
-    //********************************//
-    //          Info Dial             //
-//    //********************************//
-//    public class InfoDial extends DialogFragment
-//    {
-//        Context mContext = getApplicationContext();
-//        Dialog dialog = new Dialog(mContext);
-//        dialog.setContentView(R.layout.custom_dialog);
-//        dialog.setTitle("커스텀 다이얼로그");
-//        TextView text = (TextView) dialog.findViewById(R.id.text);
-//        text.setText("Hello, this is a custom dialog!");
-//        ImageView image = (ImageView) dialog.findViewById(R.id.image);
-//        image.setImageResource(R.drawable.icon)
-//        Dialog dialog = new Dialog(MainActivity.this);
-//        dialog.setContentView(R.layout);
-//        dialog.setTitle("Custom Dialog");
-//
-//        TextView tv = (TextView) dialog.findViewById(R.id.text);
-//        tv.setText("Hello. This is a Custom Dialog !");
-//
-//        ImageView iv = (ImageView) dialog.findViewById(R.id.image);
-//        iv.setImageResource(R.drawable.suji);
-//
-//        dialog.show();
+    //   public static final String ACCESS_FINE_LOCATION = "android.permission.ACCESS_FINE_LOCATION";
+
+    public void Permissioncheck(){
+        if (ContextCompat.checkSelfPermission(this,android.Manifest.permission.ACCESS_FINE_LOCATION)!= PackageManager.PERMISSION_GRANTED) {
+
+            // 이 권한을 필요한 이유를 설명해야하는가?
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this,android.Manifest.permission.ACCESS_FINE_LOCATION)) {
+
+                // 다이어로그같은것을 띄워서 사용자에게 해당 권한이 필요한 이유에 대해 설명합니다
+                // 해당 설명이 끝난뒤 requestPermissions()함수를 호출하여 권한허가를 요청해야 합니다
+                requestPermissions(new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
+                        MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
+            } else {
+
+                ActivityCompat.requestPermissions(this,
+                        new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
+                        MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
+
+                // 필요한 권한과 요청 코드를 넣어서 권한허가요청에 대한 결과를 받아야 합니다
+
+            }
+        }
+        else{
+            scanLeDevice(true);
+        }
+    }
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           String permissions[], int[] grantResults) {
+        switch (requestCode) {
+            case MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION:
+
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    scanLeDevice(true);
+                    // 권한 허가
+                    // 해당 권한을 사용해서 작업을 진행할 수 있습니다
+                } else {
+                    // 권한 거부
+                    // 사용자가 해당권한을 거부했을때 해주어야 할 동작을 수행합니다
+                }
+                return;
+        }
+    }
 }
 

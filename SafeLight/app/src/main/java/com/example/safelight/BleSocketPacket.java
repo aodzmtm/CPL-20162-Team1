@@ -15,7 +15,7 @@ public class BleSocketPacket {
     private final static int COMMAND_NONE = 0x0;
     private final static char COMMAND_REQUEST_ID = 'R';     // Request (Android -> Server)   : ID
     private final static char COMMAND_REQUEST_ST = 'E';     // Request (Android -> Server)   : STATE
-    private final static char COMMAND_RESPONSE =   'E';     // Response(Server -> Android)
+    private final static char COMMAND_REPORT = 'M';         // Request (Android -> Server)   : REPORT marker
     private static final String CDMA = "9900000000XX00000001011231+000-000";
 
     private final static String HEADER_NAME = "bleproj";
@@ -44,24 +44,6 @@ public class BleSocketPacket {
         +------------+-------------+-------+-------+
      */
 
-    public String makeRequestMsg(int cmd, String devNum, String Date)
-    {
-        String msg=null;
-
-        //서버에 보안등 ID요청
-        if(cmd == COMMAND_REQUEST_ID)
-        {
-            msg = STX + Date + COMMAND_REQUEST_ID  + devNum + ETX;     // devNum : MAC
-
-            Log.i("MSG",msg);
-        }
-        else
-        {
-            //에러 확인용
-            Log.i("BleSocketPacket","makeRequst Msg unexpected cmd"+cmd);
-        }
-        return msg;
-    }
 
     public String makeRequestMsg(int cmd, String devNum, String Date, String State)
     {
@@ -72,6 +54,12 @@ public class BleSocketPacket {
         {
             msg = STX + Date + COMMAND_REQUEST_ST + devNum + CDMA  + State + ETX;
                    // String.valueOf(major) + ";" + String.valueOf(minor);        // devNum : ID
+        }
+        else if(cmd == COMMAND_REQUEST_ID)
+        {
+            msg = STX + Date + COMMAND_REQUEST_ID  + devNum + ETX;     // devNum : MAC
+
+            Log.i("MSG",msg);
         }
         else
         {

@@ -11,7 +11,7 @@ import android.os.Message;
 import android.util.Log;
 
 import org.java_websocket.client.WebSocketClient;
-import org.java_websocket.drafts.Draft_10;
+import org.java_websocket.drafts.Draft_17;
 import org.java_websocket.handshake.ServerHandshake;
 
 import java.net.URI;
@@ -56,14 +56,12 @@ public class ClientThread extends Thread {
         try
         {
             url = new URI(destAddress);
-            Log.i("Test_S2","url:"+url);
         }catch(URISyntaxException e) {
-            Log.i("ERROR","URI(ClientThread.java)");
             e.printStackTrace();
             return;
         }
 
-        mSocket = new WebSocketClient(url, new Draft_10()) {
+        mSocket = new WebSocketClient(url, new Draft_17()) {
             @Override
             public void onOpen(ServerHandshake handshakedata) {
                 Log.i("Websocket","Opened");
@@ -76,8 +74,6 @@ public class ClientThread extends Thread {
                 mActivity.runOnUiThread(new Runnable() {
                       @Override
                     public void run() {
-                //          TextView textView = (TextView)findViewById(R.id.messages);
-                //          textView.setText(textView.getText() + "\n" + message);
                 sendMessageToHandler(MSG_RECEIVED_ACK, msg);
 
                 Log.d("Client", "respMsg: " + msg);

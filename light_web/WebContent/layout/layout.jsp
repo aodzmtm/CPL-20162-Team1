@@ -63,12 +63,9 @@ div {
 }
 </style>
 <link type="text/css" href="css/layout.css" rel="stylesheet" />
-<link rel="stylesheet" type="text/css" media="screen"
-	href="jqueryui/jquery-ui.css" />
-<link rel="stylesheet" type="text/css" media="screen"
-	href="jqgrid/css/ui.jqgrid.css" />
-<script src="js/imageControl.js" language="javaScript"
-	type="text/javascript"></script>
+<link rel="stylesheet" type="text/css" media="screen" href="jqueryui/jquery-ui.css" />
+<link rel="stylesheet" type="text/css" media="screen" href="jqgrid/css/ui.jqgrid.css" />
+<script src="js/imageControl.js" language="javaScript" type="text/javascript"></script>
 <script src="js/common.js" language="javaScript" type="text/javascript"></script>
 <script src="jqueryui/jquery-ui.js"></script>
 <script src="jqgrid/js/jquery.jqGrid.min.js"></script>
@@ -76,13 +73,10 @@ div {
 <script type="text/javascript" src="js/util.js"></script>
 <script src="js/jquery-1.11.0.min.js"></script>
 <script src="jqgrid/src/i18n/grid.locale-kr.js"></script>
-
-<script src="js/imageControl.js" language="javaScript"
-	type="text/javascript"></script>
-<script src="js/common.js" language="javaScript" type="text/javascript">
-	
-</script>
-
+<script src="js/imageControl.js" language="javaScript" type="text/javascript"></script>
+<script src="js/common.js" language="javaScript" type="text/javascript"></script>
+<script src="graph/Chart.min.js"></script>
+<script src="graph/Chart.StackedBar.js"></script>
 
 <tiles:insertAttribute name="leftSideDisplayFunc" />
 <tiles:insertAttribute name="leftSideFunc" />
@@ -102,6 +96,8 @@ div {
 <tiles:insertAttribute name="gridLightFunc" />
 <tiles:insertAttribute name="gridHistory" />
 <tiles:insertAttribute name="gridHistoryFunc" />
+
+<tiles:insertAttribute name="graph" />
 
 <tiles:insertAttribute name="dialogFunc" />
 

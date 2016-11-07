@@ -36,6 +36,7 @@ function graphDisplay()
 	gridNoneDisplay();
 	display.style.display = "";
 	input_id.value = "";
+	$(getGraphRequest(0));
 }
 
 

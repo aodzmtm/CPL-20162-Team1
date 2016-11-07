@@ -181,10 +181,21 @@
 			leftNoneButton1();
 		}
 	}
-
+	function leftButton3() {
+		if ("${sessionScope.admin.admin_id}" != "") {
+		document.getElementById("leftButton3").className = "active";
+		leftNoneButton1();
+		leftNoneButton2();
+		}
+	}
 	function leftNoneButton1() {
 		if ("${sessionScope.admin.admin_id}" != "") {
 			document.getElementById("leftButton1").className = "";
+		}
+	}
+	function leftNoneButton3() {
+		if ("${sessionScope.admin.admin_id}" != "") {
+		document.getElementById("leftButton3").className = "";
 		}
 	}
 	function leftNoneButton2() {

@@ -5,6 +5,7 @@
       <module fileurl="file://$PROJECT_DIR$/Java-WebSocket-master/Java-WebSocket-master.iml" filepath="$PROJECT_DIR$/Java-WebSocket-master/Java-WebSocket-master.iml" />
       <module fileurl="file://$PROJECT_DIR$/SafeLight.iml" filepath="$PROJECT_DIR$/SafeLight.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/json_simple-1.1/json_simple-1.1.iml" filepath="$PROJECT_DIR$/json_simple-1.1/json_simple-1.1.iml" />
     </modules>
   </component>
 </project>

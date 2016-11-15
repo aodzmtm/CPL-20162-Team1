@@ -1,10 +1,9 @@
 package com.example.safelight;
 
 import android.app.AlertDialog;
-import android.app.Dialog;
-import android.app.DialogFragment;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.app.ProgressDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothManager;
@@ -19,9 +18,13 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.drawable.BitmapDrawable;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.os.Message;
 import android.preference.PreferenceManager;
 import android.support.v4.app.ActivityCompat;
@@ -45,20 +48,22 @@ import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.GroundOverlayOptions;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.maps.model.Tile;
-import com.google.android.gms.maps.model.TileOverlayOptions;
-import com.google.android.gms.maps.model.TileProvider;
 
-import java.io.ByteArrayOutputStream;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+
+import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.BitSet;
 import java.util.Date;
 import java.util.HashMap;
 
@@ -78,6 +83,17 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
     private HashMap<String, BleDeviceInfo> mItemMap;
     private BleDeviceInfo mMaxRssiBeacon;
 
+    // 마커 배열 할당에 쓰일 상수
+    private static int rows_sec = 0;
+    private static int rows_mark = 0;
+    private static int rows_sec_server = 0;
+    private static int rows_mark_server = 0;
+    private static double[][] markers_sec = null;
+    private static double[][] markers = null;
+    // 마커 정보 파일 출력에 쓰일 배열
+    private static double[][] markers_sec_server = null;
+    private static double[][] markers_server = null;
+
     // 컨스턴트
     private static final String URL = "ws://192.168.0.4:8080/light_web/echo.do";
     private static final int REQUEST_ENABLE_BT = 1; // 블루투스 ON 요청 횟수
@@ -86,6 +102,10 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
     private static final boolean USING_WINI = true; // 비콘 종류에 따라 true or false
     private static final String TAG = "SCAN";
     private static final boolean IS_DEBUG = true;
+
+    // GPS 현재 위치 받아올 x,y 좌표
+    private static double x = 0.0;
+    private static double y = 0.0;
 
     String bAddress;
     String bDate;
@@ -108,10 +128,14 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 
     //permission
     private static final int MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 0;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
+
+        // 로컬 파일 읽어오기
+        loadTxt();
 
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
@@ -122,6 +146,7 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
         setting = PreferenceManager.getDefaultSharedPreferences(this);
         BEACON_UUID = getBeaconUuid(setting);
         saveRSSI = setting.getBoolean("saveRSSI", true);
+
 
         // mClientThread는 서버와 연결.
         mClientThread = new ClientThread(mSocketHandler,MainActivity.this, URL);
@@ -186,6 +211,7 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
             switch(v.getId())
             {
                 case R.id.btn_Scan:
+                    ProgressDial(v.getId());
                     scanBLE();
                     break;
                 case R.id.btn_service://서비스작동
@@ -193,11 +219,17 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
                     finish();
                     break;
                 case R.id.btn_Refresh://보안등정보동기화
+                    ProgressDial(v.getId());
+                    mMap.clear();
+                    getInfo();
+                    print_updatedMarker(mMap);;
                     break;
                 case R.id.btn_Route://신고된길만표시
                     break;
                 case R.id.btn_Report://신고
-                    alertShow(v);
+                    // GPS 통신 관련 매니저 생성
+                    LocationManager lm = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+                    alertShow(lm);
                     break;
                 case R.id.btn_Info:
                     mCustomDialog = new CustomDialogFragment();
@@ -222,8 +254,8 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
         mMap = googleMap;
 
         // 구글맵 위에 디자인 그리는 형태로 tile 사용
-        TileProvider coorTileProvider = new CoordTileProvider(getApplicationContext());
-        mMap.addTileOverlay(new TileOverlayOptions().tileProvider(coorTileProvider));
+        //TileProvider coorTileProvider = new CoordTileProvider(getApplicationContext());
+        //mMap.addTileOverlay(new TileOverlayOptions().tileProvider(coorTileProvider));
 
         // 9호관 중심 화면 설정
         LatLng eng_9 = new LatLng(35.88688, 128.60850);                             // 9호관 좌표
@@ -254,12 +286,109 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
         manager.notify(1, builder.build());
     }
 
-    public void alertShow(View v){
-        MyDialogFragment frag = MyDialogFragment.newInstance();
-        frag.show(getFragmentManager(),"TAG");
+    private void alertShow(final LocationManager lm){
+        final AlertDialog.Builder alt_bld = new AlertDialog.Builder(this);
+        alt_bld.setMessage("어두운 길로 신고하시겠습니까?").setCancelable(
+                false).setPositiveButton("Yes",
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        // Action for 'Yes' Button
+                        try{
+                            ProgressDial(id);
+                            // GPS 제공자의 정보가 바뀌면 콜백하도록 리스너 등록하기~!!!
+                            lm.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, // 등록할 위치제공자
+                                    100, // 통지사이의 최소 시간간격 (miliSecond)
+                                    1, // 통지사이의 최소 변경거리 (m)
+                                    mLocationListener);
+                            lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, // 등록할 위치제공자
+                                    100, // 통지사이의 최소 시간간격 (miliSecond)
+                                    1, // 통지사이의 최소 변경거리 (m)
+                                    mLocationListener);
+                            addCount(lm);
+                        }catch(SecurityException ex){
+                        }
+
+                    }
+                }).setNegativeButton("No",
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        // Action for 'NO' Button
+                        dialog.cancel();
+                    }
+                });
+        AlertDialog alert = alt_bld.create();
+        // Title for AlertDialog
+        alert.setTitle("Title");
+        // Icon for AlertDialog
+        alert.setIcon(R.drawable.cast_ic_notification_on);
+        alert.show();
     }
 
 
+
+    public void print_Marker(final GoogleMap map) {
+
+        new Handler(Looper.getMainLooper()).post(new Runnable() {
+            public void run() {
+                // 보안등
+                for (int i = 0; i < rows_sec; i++) {
+                    add_SecLight(map, markers_sec[i][1], markers_sec[i][2], markers_sec[i][3]);
+                }
+
+                // 마커
+                for (int i = 0; i < rows_mark; i++) {
+                    add_Marker(map, markers[i][1], markers[i][2], markers[i][3]);
+                }
+
+            }
+
+        });
+    }
+    public void print_updatedMarker(final GoogleMap map) {
+
+        new Handler(Looper.getMainLooper()).post(new Runnable() {
+            public void run() {
+                // 보안등
+                for (int i = 0; i < rows_sec_server; i++) {
+                    add_SecLight(map, markers_sec_server[i][1], markers_sec_server[i][2], markers_sec_server[i][3]);
+                }
+
+                // 마커
+                for (int i = 0; i < rows_mark_server; i++) {
+                    add_Marker(map, markers_server[i][1], markers_server[i][2], markers_server[i][3]);
+                }
+
+            }
+
+        });
+    }
+
+    // 보안등 형태별 마커
+    public void add_SecLight(GoogleMap map, double x, double y, double num){
+
+            LatLng obj = new LatLng(x,y);
+            BitmapDrawable bitmapdraw = (BitmapDrawable)getResources().getDrawable(R.drawable.light_green);
+
+            int height=75, width=75;
+
+            // num 1 : 정상
+            if(num==0.0){
+                bitmapdraw = (BitmapDrawable)getResources().getDrawable(R.drawable.light_green);
+            }
+            // num 2: 고장
+            else if(num==1.0){
+                bitmapdraw = (BitmapDrawable)getResources().getDrawable(R.drawable.light_black);
+            }
+            // num 3: 수리중
+            else if(num==2.0){
+                bitmapdraw = (BitmapDrawable)getResources().getDrawable(R.drawable.light_red);
+            }
+
+            Bitmap b = bitmapdraw.getBitmap();
+            Bitmap smallMarker = Bitmap.createScaledBitmap(b, width, height, false);
+            map.addMarker(new MarkerOptions().position(obj)
+                    .icon(BitmapDescriptorFactory.fromBitmap(smallMarker)));
+        }
     public void add_Marker(GoogleMap map, double x, double y, double count){
 
         // circle settings
@@ -267,7 +396,7 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
         LatLng latLng = new LatLng(x,y);
 
         // draw circle
-        int d = 500; // diameter
+        int d = 250; // diameter
         Bitmap bm = Bitmap.createBitmap(d, d, Bitmap.Config.ARGB_8888);
         Canvas c = new Canvas(bm);
         Paint p = new Paint();
@@ -284,129 +413,46 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
                 transparency(0.4f));
     }
 
-    // 보안등 형태별 마커
-    public void add_SecLight(GoogleMap map, double x, double y, int num){
+    //잠깐 로딩 다이얼 띄우기
+    public void ProgressDial(int id){
+        final ProgressDialog dialog;
 
-        LatLng obj = new LatLng(x,y);
-        BitmapDrawable bitmapdraw = (BitmapDrawable)getResources().getDrawable(R.drawable.light_green);
-
-        int height=75, width=75;
-
-        // num 1 : 정상
-        if(num==0){
-            bitmapdraw = (BitmapDrawable)getResources().getDrawable(R.drawable.light_green);
-        }
-        // num 2: 고장
-        else if(num==1){
-            bitmapdraw = (BitmapDrawable)getResources().getDrawable(R.drawable.light_black);
-        }
-        // num 3: 수리중
-        else if(num==2){
-            bitmapdraw = (BitmapDrawable)getResources().getDrawable(R.drawable.light_red);
-        }
-
-        Bitmap b = bitmapdraw.getBitmap();
-        Bitmap smallMarker = Bitmap.createScaledBitmap(b, width, height, false);
-        map.addMarker(new MarkerOptions().position(obj)
-                .title("No."+(num+1))
-                .icon(BitmapDescriptorFactory.fromBitmap(smallMarker)));
-        map.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener()
-        {
-            @Override
-            public boolean onMarkerClick(Marker arg0) {
-                if(arg0.getTitle().substring(0,3)=="No.") // if marker source is clicked
-                    Toast.makeText(MainActivity.this, arg0.getTitle(), Toast.LENGTH_SHORT).show();// display toast
-                return true;
-            }
-
-        });
-    }
-
-    public void print_Marker(GoogleMap map){
-
-        // 안전
-        for(int i=0;i<CoordInfo.safe.length;i++){
-            add_SecLight(map, CoordInfo.safe[i][0],CoordInfo.safe[i][1],0);
-        }
-        // 수리중
-        for(int i=0;i<CoordInfo.fix.length;i++){
-            add_SecLight(map, CoordInfo.fix[i][0],CoordInfo.fix[i][1],1);
-        }
-        // 고장
-        for(int i=0;i<CoordInfo.danger.length;i++){
-            add_SecLight(map, CoordInfo.danger[i][0],CoordInfo.danger[i][1],2);
-        }
-
-        // 마커
-        for(int i=0;i<CoordInfo.mark.length;i++){
-            add_Marker(map, CoordInfo.mark[i][0],CoordInfo.mark[i][1],CoordInfo.mark[i][2]);
+        switch(id) {
+            case R.id.btn_Scan:
+                dialog = ProgressDialog.show(MainActivity.this, "", "스캔중 입니다. 잠시 기다려주세요", true);
+                dialog.show();
+                mHandler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        dialog.dismiss();
+                    }
+                }, 3500);//1000=1s
+                break;
+            case R.id.btn_Refresh:
+                dialog = ProgressDialog.show(MainActivity.this, "", "데이터 동기화중입니다. 잠시 기다려주세요", true);
+                dialog.show();
+                mHandler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        dialog.dismiss();
+                    }
+                }, 3500);//1000=1s
+                break;
+            // REPORT에서 신고 확인 눌렀을 경우
+            case -1:
+                dialog = ProgressDialog.show(MainActivity.this, "", "신고중입니다. 잠시 기다려주세요", true);
+                dialog.show();
+                mHandler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        dialog.dismiss();
+                    }
+                }, 3500);//1000=1s
+                break;
         }
     }
 
 
-    // 구글맵 디자인 변경하는 클래스
-    public static class CoordTileProvider implements TileProvider {
-
-        private static final int TILE_SIZE_DP = 256;
-
-        private final float mScaleFactor;
-        private final Bitmap mBorderTile;
-
-        public CoordTileProvider(Context context) {
-        /* Scale factor based on density, with a 0.2 multiplier to increase tile generation
-         * speed */
-            mScaleFactor = context.getResources().getDisplayMetrics().density * 0.2f;
-            Paint paint = new Paint();
-            paint.setColor(Color.DKGRAY);           // 배경색: darkgray
-            paint.setAlpha(0);                     // 투명도: 0~300
-            mBorderTile = Bitmap.createBitmap((int) (TILE_SIZE_DP * mScaleFactor),
-                    (int) (TILE_SIZE_DP * mScaleFactor), android.graphics.Bitmap.Config.ARGB_8888);
-            Canvas canvas = new Canvas(mBorderTile);
-            canvas.drawRect(0, 0, TILE_SIZE_DP * mScaleFactor, TILE_SIZE_DP * mScaleFactor,
-                    paint);
-        }
-
-        @Override
-        public Tile getTile(int x, int y, int zoom) {
-            Bitmap coordTile = drawTileCoords(x, y, zoom);
-            ByteArrayOutputStream stream = new ByteArrayOutputStream();
-            coordTile.compress(Bitmap.CompressFormat.PNG, 0, stream);
-            byte[] bitmapData = stream.toByteArray();
-            return new Tile((int) (TILE_SIZE_DP * mScaleFactor),
-                    (int) (TILE_SIZE_DP * mScaleFactor), bitmapData);
-        }
-
-        private Bitmap drawTileCoords(int x, int y, int zoom) {
-            Bitmap copy = null;
-            synchronized (mBorderTile) {
-                copy = mBorderTile.copy(android.graphics.Bitmap.Config.ARGB_8888, true);
-            }
-            return copy;
-        }
-    }
-
-    //********************************//
-    //       어두운길 신고            //
-    //********************************//
-    public static class MyDialogFragment extends DialogFragment{
-        public static MyDialogFragment newInstance(){
-            return new MyDialogFragment();
-        }
-        public Dialog onCreateDialog(Bundle savedInstanceState){
-            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-            builder.setTitle("REPORT");
-            builder.setMessage("어두운 길로 신고하겠습니까?");
-            builder.setPositiveButton("신고하기", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    //addCount(); 카운트값 갱신하는 함수
-                    Log.i("MyTag","신고하기 클릭");
-                }
-            });
-            builder.setNegativeButton("취소",null);
-            return builder.create();
-        }
-    }
     private View.OnClickListener Listener = new View.OnClickListener() {
         public void onClick(View v) {
             mCustomDialog.dismiss();
@@ -436,19 +482,21 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
         public void handleMessage(Message msg)
         {
             String handlerText = (String)msg.obj;
+            String bID = handlerText.substring(14,20);
+
 
             switch(msg.what)
             {
                 case MSG_RECEIVED_ACK:
-                    if(!mStatePacket.check_ID(bAddress))          //보안등 ID가 리스트에 없다 => 보안등 ID요청 ACK
+                    if(!mStatePacket.check_ID(bID))          //보안등 ID가 리스트에 없다 => 보안등 ID요청 ACK
                     {
-                        mStatePacket.set_ID(bAddress);
+                        mStatePacket.set_ID(bID);
                         // 서버로 비컨의 상태를 전송한다.
-                        sendSocketMsg('E', bAddress, bDate, bState);
+                        sendSocketMsg('E', bID, bDate, bState);
                     }
-                    else if(mStatePacket.check_ID(bAddress))  //상태 정보에대한 ACK
+                    else if(mStatePacket.check_ID(bID))  //상태 정보에대한 ACK
                     {
-                        mStatePacket.remove_ID(bAddress);
+                        mStatePacket.remove_ID(bID);
                     }
                     break;
             }
@@ -529,6 +577,7 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
         // bAddress = device.getAddress();
         if(bAddress == null)
             bAddress = "Unknown";
+        Log.i("address: ", bAddress);
 
         scanRecordAsHex = mBleUtils.ByteArrayToString(scanRecord);
 
@@ -567,8 +616,7 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 
         // 비컨 상태정보
         int tempState1 = mBleUtils.hex2dec(scanRecordAsHex.substring(58,60));
-        String tempState2 = scanRecordAsHex.substring(60,62);
-        bState = mBleUtils.parseState(mBleUtils.byte2bitset((byte)tempState1)) + tempState2;
+        bState = mBleUtils.parseState(mBleUtils.byte2bitset((byte)tempState1));
 
         // 파싱한 상태정보 값 설정
         mStatePacket.set_State(bState);
@@ -591,6 +639,15 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 
         return uuid;
     }
+
+
+    private void syncData(){
+
+    }
+
+
+
+
     // 비컨 정보 전송하는 소켓 함수
     private void sendSocketMsg(char cmd, String devNum, String Date, String State) {
         String sendMsg = mBleSocketPacket.makeRequestMsg(cmd, devNum, Date, State);
@@ -599,30 +656,174 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
         }
     }
 
+    public void getInfo(){
+        //http post요청 코드
+        Thread thread = new Thread() {
+
+
+
+            @Override
+
+            public void run() {
+
+                String urlString = "http://192.168.0.4:8080/light_web/mobileLampData.do";
+                String urlString2 = "http://192.168.0.4:8080/light_web/mobileDangerData.do";
+                //adding some data to send along with the request to the server
+
+                URL url, url2;
+                try {
+                    url = new URL(urlString);
+                    HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                    conn.setConnectTimeout(10 * 1000);
+                    conn.setReadTimeout(10 * 1000);
+
+                  /*  conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");*/
+                    conn.setDoOutput(true);
+                    conn.setDoInput(true);
+                    conn.setRequestMethod("POST");
+                    // this is were we're adding post data to the request
+
+                    String line = null;
+                    String json ="";
+
+
+                    url2 = new URL(urlString2);
+                    HttpURLConnection conn2 = (HttpURLConnection) url2.openConnection();
+                    //conn2.setConnectTimeout(10 * 1000);
+                    //conn2.setReadTimeout(10 * 1000);
+
+                  /*  conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");*/
+                    conn2.setDoOutput(true);
+                    conn2.setDoInput(true);
+                    conn2.setRequestMethod("POST");
+                    // this is were we're adding post data to the request
+
+                    String line2 = null;
+                    String json2 ="";
+
+
+                    try {
+                        BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+                        while ((line = reader.readLine()) != null) {
+
+                            json+=line;
+
+                        }
+
+                        BufferedReader reader2 = new BufferedReader(new InputStreamReader(conn2.getInputStream()));
+                        while ((line2 = reader2.readLine()) != null) {
+
+                            json2+=line2;
+
+                        }
+
+                        JSONParser jsonParser = new JSONParser();
+                        // JSON데이터를 넣어 JSON Object 로 만들어 준다.
+                        JSONObject jsonObject = (JSONObject) jsonParser.parse(json);
+                        // books의 배열을 추출
+                        JSONArray lampInfoArray = (JSONArray) jsonObject.get("LampVo");
+
+
+                        JSONObject jsonObject2 = (JSONObject) jsonParser.parse(json2);
+                        // books의 배열을 추출
+                        JSONArray markerInfoArray = (JSONArray) jsonObject2.get("NeedLocationVo");
+
+                        rows_sec_server = lampInfoArray.size();
+                        rows_mark_server = markerInfoArray.size();
+
+                        // 불러온 만큼 보안등, 마커 배열 동적 생성
+                        markers_sec_server = new double[lampInfoArray.size()][4];
+                        markers_server = new double[markerInfoArray.size()][4];
+
+                        // 보안등 정보 입력
+                        for (int i = 0; i < lampInfoArray.size(); i++) {
+                            // 배열 안에 있는것도 JSON형식 이기 때문에 JSON Object 로 추출
+                            JSONObject lampVoObject = (JSONObject) lampInfoArray.get(i);
+
+                            // 정상인 보안등일 경우
+                            if(Integer.valueOf(lampVoObject.get("power_off").toString())==0
+                                    & Integer.valueOf(lampVoObject.get("abnormal_blink").toString())==0
+                                    & Integer.valueOf(lampVoObject.get("short_circuit").toString())==0
+                                    & Integer.valueOf(lampVoObject.get("lamp_failure").toString())==0
+                                    & Integer.valueOf(lampVoObject.get("lamp_state").toString())==0)
+                            {
+                                markers_sec_server[i][0] = 0.0;
+                                markers_sec_server[i][1] = Double.valueOf(lampVoObject.get("x").toString());
+                                markers_sec_server[i][2] = Double.valueOf(lampVoObject.get("y").toString());
+                                markers_sec_server[i][3] = 0.0;
+                            }
+                            // 완전히 고장난 보안등일 경우
+                            else if(Integer.valueOf(lampVoObject.get("power_off").toString())!=0
+                                    & Integer.valueOf(lampVoObject.get("abnormal_blink").toString())!=0
+                                    & Integer.valueOf(lampVoObject.get("short_circuit").toString())!=0
+                                    & Integer.valueOf(lampVoObject.get("lamp_failure").toString())!=0
+                                    & Integer.valueOf(lampVoObject.get("lamp_state").toString())!=0)
+                            {
+                                markers_sec_server[i][0] = 0.0;
+                                markers_sec_server[i][1] = Double.valueOf(lampVoObject.get("x").toString());
+                                markers_sec_server[i][2] = Double.valueOf(lampVoObject.get("y").toString());
+                                markers_sec_server[i][3] = 1.0;
+                            }
+                            // 이상이 있는 보안등일 경우
+                            else
+                            {
+                                markers_sec_server[i][0] = 0.0;
+                                markers_sec_server[i][1] = Double.valueOf(lampVoObject.get("x").toString());
+                                markers_sec_server[i][2] = Double.valueOf(lampVoObject.get("y").toString());
+                                markers_sec_server[i][3] = 2.0;
+                            }
+                        }
+
+                        // 마커 정보 입력
+                        for (int i = 0; i < markerInfoArray.size(); i++) {
+                            JSONObject markerObject = (JSONObject) markerInfoArray.get(i);
+                            markers_server[i][0] = 1.0;
+                            markers_server[i][1] = Double.valueOf(markerObject.get("x").toString());
+                            markers_server[i][2] = Double.valueOf(markerObject.get("y").toString());
+                            markers_server[i][3] = Double.valueOf(markerObject.get("count").toString());
+                        }
+
+                        // 서버에서 받아온 값 로컬에 저장.
+                        saveText(markers_sec_server, markers_server);
+
+                    } catch (Exception e) {
+                        System.out.println("Error reading JSON string:" + e.toString());
+                    }
+
+                } catch (Exception e) {
+                    System.out.println("error");
+                    //handle the exception !
+                    //Log.d(TAG,e.getMessage());
+                }
+
+            }
+        };
+
+        thread.start();
+    }
 
     //REPORT시 GPS 불러서 count 값 갱신
-    public void addCount(){
-
+    private void addCount(LocationManager lm){
+        final double xtoServ, ytoServ;
         int num=0;
-        double sum, temp;
-        // GPS 정보 획득
-        GpsInfo gps = new GpsInfo(MainActivity.this);
-        // GPS 사용유무 체크
-        if (gps.isGetLocation()) {
-        }
-        // 좌표 받아오기
-        final double x = gps.getLatitude();
-        final double y = gps.getLongitude();
-
-        for(int i=0;i<CoordInfo.mark.length-1;i++){
-            sum = Math.pow(Math.abs(x-CoordInfo.mark[i][0]),2)+Math.pow(Math.abs(y-CoordInfo.mark[i][1]),2);
-            temp = Math.pow(Math.abs(x-CoordInfo.mark[i+1][0]),2)+Math.pow(Math.abs(y-CoordInfo.mark[i+1][1]),2);
-            if(sum>temp){
+        double sum = Math.pow(Math.abs(x-markers[0][1]),2)+Math.pow(Math.abs(y-markers[0][2]),2);
+        double temp = 0.0;
+        for(int i=0;i<markers.length;i++){
+            temp = Math.pow(Math.abs(x-markers[i][1]),2)+Math.pow(Math.abs(y-markers[i][2]),2);
+            if(sum > temp){
                 sum = temp;
                 num = i;
             }
         }
-        CoordInfo.setMarker(num);
+        xtoServ = markers[num][1];
+        ytoServ = markers[num][2];
+
+        // GPS 자원 해제
+        try{
+            lm.removeUpdates(mLocationListener);
+
+        }catch(SecurityException ex){
+        }
 
         //http post요청 코드
         Thread thread = new Thread() {
@@ -630,13 +831,11 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
             @Override
 
             public void run() {
-
                 String urlString = "http://herick.iptime.org:8080/light_web/mobileDanger.do";
-
-                InputStream myInputStream =null;
+                InputStream myInputStream = null;
                 StringBuilder sb = new StringBuilder();
                 //adding some data to send along with the request to the server
-                sb.append("x="+x+"&y="+y);
+                sb.append("x="+xtoServ+"&y="+ytoServ);
                 URL url;
                 try {
                     url = new URL(urlString);
@@ -657,12 +856,35 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
                 }
             }
         };
-
         thread.start();
-
-
-
     }
+
+
+    // GPS 좌표 변화 감지 리스너
+    private final LocationListener mLocationListener = new LocationListener() {
+        public void onLocationChanged(Location location) {
+            //여기서 위치값이 갱신되면 이벤트가 발생한다.
+            //값은 Location 형태로 리턴되며 좌표 출력 방법은 다음과 같다.
+
+            Log.d("test", "onLocationChanged, location:" + location);
+            x = location.getLongitude(); //경도
+            y = location.getLatitude();   //위도
+        }
+        public void onProviderDisabled(String provider) {
+            // Disabled시
+            Log.d("test", "onProviderDisabled, provider:" + provider);
+        }
+
+        public void onProviderEnabled(String provider) {
+            // Enabled시
+            Log.d("test", "onProviderEnabled, provider:" + provider);
+        }
+
+        public void onStatusChanged(String provider, int status, Bundle extras) {
+            // 변경시
+            Log.d("test", "onStatusChanged, provider:" + provider + ", status:" + status + " ,Bundle:" + extras);
+        }
+    };
 
     //   public static final String ACCESS_FINE_LOCATION = "android.permission.ACCESS_FINE_LOCATION";
 
@@ -708,5 +930,108 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
                 return;
         }
     }
-}
 
+    // 기존에 로컬에 저장된 정보 불러오기
+    public void loadTxt(){
+        Thread thread = new Thread(){
+            public void run(){
+                try{
+                    FileInputStream fis = openFileInput("lamp.txt");
+                    byte[] data = new byte[fis.available()];
+                    while(fis.read(data) != -1){
+                        String s = new String(data);
+                        String[] temp = s.split("\n");
+                        for (int i=0; i<temp.length;i++) {
+                            // 좌표값이 보안등인 경우
+                            if (Double.valueOf(temp[i].substring(0, 1)) == 0.0) {
+                                rows_sec++;
+                            }
+                            // 좌표값이 마커인 경우
+                            else if (Double.valueOf(temp[i].substring(0, 1)) == 1.0) {
+                                rows_mark++;
+                            }
+                        }
+                    }
+                    fis.close();
+
+                    // 파일에 저장된 갯수만큼 markers 배열 생성
+                    markers_sec = new double[rows_sec][4];
+                    markers = new double[rows_mark][4];
+
+                    rows_sec=0; rows_mark=0;
+
+                    // 파일 객체 재생성 (bufferedreader에서는 seek 불가능)
+                    FileInputStream fis2 = openFileInput("lamp.txt");
+                    byte[] data2 = new byte[fis2.available()];
+                    while(fis2.read(data2) != -1){
+                        String s = new String(data2);
+                        String[] temp = s.split("\n");
+                        for (int i=0; i<temp.length;i++){
+
+                            /* 1열값이 0.0: 보안등, 1.0: 마커
+                               2열값  : x 좌표
+                               3열값  : y 좌표
+                               4열값  : 보안등인 경우 상태(0: 정상, 1: 수리중 2: 고장)
+                                        마커인 경우 report 누적값                       */
+                            // 좌표값이 보안등인 경우
+                            if(Double.valueOf(temp[i].substring(0, 1))==0.0){
+                                markers_sec[rows_sec][0] = Double.valueOf(temp[i].substring(0, 1));
+                                markers_sec[rows_sec][1] = Double.valueOf(temp[i].substring(2, 11));
+                                markers_sec[rows_sec][2] = Double.valueOf(temp[i].substring(12, 22));
+                                markers_sec[rows_sec][3] = Double.valueOf(temp[i].substring(23, temp[i].length()));
+                                rows_sec++;
+                            }
+                            // 좌표값이 마커인 경우
+                            else if(Double.valueOf(temp[i].substring(0, 1))==1.0){
+                                markers[rows_mark][0] = Double.valueOf(temp[i].substring(0, 1));
+                                markers[rows_mark][1] = Double.valueOf(temp[i].substring(2, 11));
+                                markers[rows_mark][2] = Double.valueOf(temp[i].substring(12, 22));
+                                markers[rows_mark][3] = Double.valueOf(temp[i].substring(23, temp[i].length()));
+                                rows_mark++;
+                            }
+                        }
+                    }
+                    fis2.close();
+
+                }catch (Exception e){
+                    e.printStackTrace();
+                }
+            }
+        };
+        thread.start();
+    }
+
+    // 동기화된 정보 파일에 덮어쓰기
+    public void saveText(final double[][] array_light, final double[][] array_marker){
+        Thread thread = new Thread(){
+            public void run(){
+                try{
+                    FileOutputStream fos = openFileOutput("lamp.txt", Context.MODE_PRIVATE);
+                    for(int i=0;i<array_light.length;i++){
+                        StringBuilder temp = new StringBuilder("");
+                        temp.append((int)array_light[i][0]+":"+
+                                String.format("%.6f",array_light[i][1])+":"+
+                                String.format("%.6f",array_light[i][2])+":"+
+                                (int)array_light[i][3]+"\r\n");
+                        fos.write(temp.toString().getBytes());
+                        System.out.println(temp.toString());
+                    }
+                    for(int i=0;i<array_marker.length;i++){
+                        StringBuilder temp = new StringBuilder("");
+                        temp.append((int)array_marker[i][0]+":"+
+                                String.format("%.6f",array_marker[i][1])+":"+
+                                String.format("%.6f",array_marker[i][2])+":"+
+                                (int)array_marker[i][3]+"\r\n");
+                        fos.write(temp.toString().getBytes());
+                        System.out.println(temp.toString());
+                    }
+                    fos.close();
+
+                }catch (Exception e){
+                    e.printStackTrace();
+                }
+            }
+        };
+        thread.start();
+    }
+}

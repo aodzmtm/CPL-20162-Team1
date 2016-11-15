@@ -90,9 +90,10 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
     private static int rows_mark_server = 0;
     private static double[][] markers_sec = null;
     private static double[][] markers = null;
-    // 마커 정보 파일 출력에 쓰일 배열
     private static double[][] markers_sec_server = null;
     private static double[][] markers_server = null;
+
+    private static boolean isMarker = true;
 
     // 컨스턴트
     private static final String URL = "ws://192.168.0.4:8080/light_web/echo.do";
@@ -100,8 +101,6 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
     private static final long SCAN_PERIOD = 1000;       // 10초동안 SCAN 과정을 수행함
     final static int MSG_RECEIVED_ACK = 0x100;
     private static final boolean USING_WINI = true; // 비콘 종류에 따라 true or false
-    private static final String TAG = "SCAN";
-    private static final boolean IS_DEBUG = true;
 
     // GPS 현재 위치 받아올 x,y 좌표
     private static double x = 0.0;
@@ -225,6 +224,8 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
                     print_updatedMarker(mMap);;
                     break;
                 case R.id.btn_Route://신고된길만표시
+                    mMap.clear();
+                    print_onlyMarker(mMap);
                     break;
                 case R.id.btn_Report://신고
                     // GPS 통신 관련 매니저 생성
@@ -356,6 +357,30 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
                 // 마커
                 for (int i = 0; i < rows_mark_server; i++) {
                     add_Marker(map, markers_server[i][1], markers_server[i][2], markers_server[i][3]);
+                }
+
+            }
+
+        });
+    }
+
+    public void print_onlyMarker(final GoogleMap map) {
+
+        new Handler(Looper.getMainLooper()).post(new Runnable() {
+            public void run() {
+                if(isMarker){
+                    // 필터링을 위해 마커만 표시
+                    for (int i = 0; i < rows_mark; i++) {
+                        add_Marker(map, markers[i][1], markers[i][2], markers[i][3]);
+                    }
+                    isMarker = false;
+                }
+                else{
+                    // 보안등
+                    for (int i = 0; i < rows_sec; i++) {
+                        add_SecLight(map, markers_sec[i][1], markers_sec[i][2], markers_sec[i][3]);
+                    }
+                    isMarker = true;
                 }
 
             }

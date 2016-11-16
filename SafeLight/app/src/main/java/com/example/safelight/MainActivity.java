@@ -94,9 +94,11 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
     private static double[][] markers_server = null;
 
     private static boolean isMarker = true;
+    private static boolean onService = false;
 
     // 컨스턴트
-    private static final String URL = "ws://192.168.0.4:8080/light_web/echo.do";
+    private static final String IP = "192.168.0.4";     // IP주소 설정하기
+    private static final String URL = "ws://"+IP+":8080/light_web/echo.do";
     private static final int REQUEST_ENABLE_BT = 1; // 블루투스 ON 요청 횟수
     private static final long SCAN_PERIOD = 1000;       // 10초동안 SCAN 과정을 수행함
     final static int MSG_RECEIVED_ACK = 0x100;
@@ -214,14 +216,14 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
                     scanBLE();
                     break;
                 case R.id.btn_service://서비스작동
-                    activateService(v);
+                    activateService();
                     finish();
                     break;
                 case R.id.btn_Refresh://보안등정보동기화
                     ProgressDial(v.getId());
                     mMap.clear();
                     getInfo();
-                    print_updatedMarker(mMap);;
+                    print_updatedMarker(mMap);
                     break;
                 case R.id.btn_Route://신고된길만표시
                     mMap.clear();
@@ -267,24 +269,21 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
     // 백그라운드 서비스 실행
-    public void activateService(View v){
-        NotificationManager manager = (NotificationManager)getSystemService(Context.NOTIFICATION_SERVICE);
+    public void activateService(){
 
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(getApplicationContext());
-        builder.setLargeIcon(BitmapFactory.decodeResource(getResources(),android.R.mipmap.sym_def_app_icon));
-        builder.setSmallIcon(android.R.mipmap.sym_def_app_icon);
-        builder.setContentTitle("Safe Light Service");
-        builder.setContentText("A safe light has scanned. Do you want to check it?");
+        if(!onService) {
+            onService = true;
+            Toast.makeText(getApplicationContext(),"서비스를 시작합니다",Toast.LENGTH_SHORT).show();
+            Intent intent = new Intent(MainActivity.this,MyService.class);
+            startService(intent);
+        }
+        else{
+            onService = false;
+            Toast.makeText(getApplicationContext(),"서비스를 종료합니다.",Toast.LENGTH_SHORT).show();
+            Intent intent = new Intent(MainActivity.this,MyService.class);
+            stopService(intent);
+        }
 
-        Intent intent = new Intent(getApplicationContext(),getClass());
-        TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
-        stackBuilder.addParentStack(getClass());
-        stackBuilder.addNextIntent(intent);
-        PendingIntent resultPendingIntent = stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
-        builder.setContentIntent(resultPendingIntent);
-        builder.setAutoCancel(true);    // notification 클릭시 삭제.
-
-        manager.notify(1, builder.build());
     }
 
     private void alertShow(final LocationManager lm){
@@ -474,6 +473,16 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
                     }
                 }, 3500);//1000=1s
                 break;
+            case 0:
+                dialog = ProgressDialog.show(MainActivity.this, "", "보안등 정보를 동기화합니다. 잠시 기다려주세요", true);
+                dialog.show();
+                mHandler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        dialog.dismiss();
+                    }
+                }, 3500);//1000=1s
+                break;
         }
     }
 
@@ -527,7 +536,7 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
             }
         }
     };
-    private void scanBLE() {
+    public void scanBLE() {
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         // 폰이 BLE 지원하지 않는 경우
         if(mBluetoothAdapter == null){                          //if (!getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
@@ -551,7 +560,7 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
         }
         scanLeDevice(true);
     }
-    private void scanLeDevice(final boolean enable) {
+    public void scanLeDevice(final boolean enable) {
         if (enable) {
             // Stops scanning after a pre-defined scan period.
             mHandler.postDelayed(new Runnable() {
@@ -665,14 +674,6 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
         return uuid;
     }
 
-
-    private void syncData(){
-
-    }
-
-
-
-
     // 비컨 정보 전송하는 소켓 함수
     private void sendSocketMsg(char cmd, String devNum, String Date, String State) {
         String sendMsg = mBleSocketPacket.makeRequestMsg(cmd, devNum, Date, State);
@@ -691,8 +692,8 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 
             public void run() {
 
-                String urlString = "http://192.168.0.4:8080/light_web/mobileLampData.do";
-                String urlString2 = "http://192.168.0.4:8080/light_web/mobileDangerData.do";
+                String urlString = "http://"+IP+":8080/light_web/mobileLampData.do";
+                String urlString2 = "http://"+IP+":8080/light_web/mobileDangerData.do";
                 //adding some data to send along with the request to the server
 
                 URL url, url2;
@@ -856,7 +857,7 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
             @Override
 
             public void run() {
-                String urlString = "http://herick.iptime.org:8080/light_web/mobileDanger.do";
+                String urlString = "http://"+IP+":8080/light_web/mobileDanger.do";
                 InputStream myInputStream = null;
                 StringBuilder sb = new StringBuilder();
                 //adding some data to send along with the request to the server
@@ -1018,7 +1019,10 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
                     }
                     fis2.close();
 
-                }catch (Exception e){
+                }catch (Exception e){               // 초기 마커 데이터가 없는 경우, 자동으로 동기화를 시작한다.
+                    ProgressDial(0);
+                    getInfo();
+                    print_updatedMarker(mMap);
                     e.printStackTrace();
                 }
             }

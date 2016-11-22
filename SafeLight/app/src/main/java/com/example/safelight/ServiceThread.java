@@ -21,13 +21,11 @@ public class ServiceThread extends Thread{
 
     public void run(){
         //반복적으로 수행할 작업을 한다.
-        while(isRun){
+        //while(isRun){
             try{
-                MainActivity ac = new MainActivity();
-                ac.scanBLE();
-                Thread.sleep(30000); //10초마다 메시지를 보냄
+                Thread.sleep(5000); //5초마다 메시지를 보냄
             }catch (Exception e) {}
             handler.sendEmptyMessage(0);//쓰레드에 있는 핸들러에게 메세지를 보냄
-        }
+        //}
     }
 }

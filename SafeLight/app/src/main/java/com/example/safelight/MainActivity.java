@@ -182,6 +182,17 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+        killService();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+    }
+
+    @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
@@ -260,9 +271,9 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
         //TileProvider coorTileProvider = new CoordTileProvider(getApplicationContext());
         //mMap.addTileOverlay(new TileOverlayOptions().tileProvider(coorTileProvider));
 
-        // 9호관 중심 화면 설정
-        LatLng eng_9 = new LatLng(35.88688, 128.60850);                             // 9호관 좌표
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(eng_9, 17));              // 배율
+        // 테스트하는 보안등 중심 화면 설정
+        LatLng eng_9 = new LatLng(35.887025, 128.609459);                    // 테스트 장소
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(eng_9, 17));       // 화면 배율
 
         // 구글맵 내에 마커 찍기
         print_Marker(mMap);
@@ -270,20 +281,16 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 
     // 백그라운드 서비스 실행
     public void activateService(){
-
-        if(!onService) {
-            onService = true;
-            Toast.makeText(getApplicationContext(),"서비스를 시작합니다",Toast.LENGTH_SHORT).show();
-            Intent intent = new Intent(MainActivity.this,MyService.class);
-            startService(intent);
-        }
-        else{
-            onService = false;
-            Toast.makeText(getApplicationContext(),"서비스를 종료합니다.",Toast.LENGTH_SHORT).show();
-            Intent intent = new Intent(MainActivity.this,MyService.class);
-            stopService(intent);
-        }
-
+        onService = true;
+        Toast.makeText(getApplicationContext(),"서비스를 시작합니다",Toast.LENGTH_SHORT).show();
+        Intent intent = new Intent(MainActivity.this,MyService.class);
+        startService(intent);
+    }
+    public  void killService(){
+        onService = false;
+        Toast.makeText(getApplicationContext(),"서비스를 종료합니다.",Toast.LENGTH_SHORT).show();
+        Intent intent = new Intent(MainActivity.this,MyService.class);
+        stopService(intent);
     }
 
     private void alertShow(final LocationManager lm){
@@ -300,6 +307,7 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
                                     100, // 통지사이의 최소 시간간격 (miliSecond)
                                     1, // 통지사이의 최소 변경거리 (m)
                                     mLocationListener);
+                            System.out.println("asd");
                             lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, // 등록할 위치제공자
                                     100, // 통지사이의 최소 시간간격 (miliSecond)
                                     1, // 통지사이의 최소 변경거리 (m)
@@ -346,8 +354,9 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
     }
     public void print_updatedMarker(final GoogleMap map) {
 
-        new Handler(Looper.getMainLooper()).post(new Runnable() {
+        new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
             public void run() {
+
                 // 보안등
                 for (int i = 0; i < rows_sec_server; i++) {
                     add_SecLight(map, markers_sec_server[i][1], markers_sec_server[i][2], markers_sec_server[i][3]);
@@ -360,7 +369,7 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 
             }
 
-        });
+        }, 3500);
     }
 
     public void print_onlyMarker(final GoogleMap map) {
@@ -390,29 +399,29 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
     // 보안등 형태별 마커
     public void add_SecLight(GoogleMap map, double x, double y, double num){
 
-            LatLng obj = new LatLng(x,y);
-            BitmapDrawable bitmapdraw = (BitmapDrawable)getResources().getDrawable(R.drawable.light_green);
+        LatLng obj = new LatLng(x,y);
+        BitmapDrawable bitmapdraw = (BitmapDrawable)getResources().getDrawable(R.drawable.light_green);
 
-            int height=75, width=75;
+        int height=75, width=75;
 
-            // num 1 : 정상
-            if(num==0.0){
-                bitmapdraw = (BitmapDrawable)getResources().getDrawable(R.drawable.light_green);
-            }
-            // num 2: 고장
-            else if(num==1.0){
-                bitmapdraw = (BitmapDrawable)getResources().getDrawable(R.drawable.light_black);
-            }
-            // num 3: 수리중
-            else if(num==2.0){
-                bitmapdraw = (BitmapDrawable)getResources().getDrawable(R.drawable.light_red);
-            }
-
-            Bitmap b = bitmapdraw.getBitmap();
-            Bitmap smallMarker = Bitmap.createScaledBitmap(b, width, height, false);
-            map.addMarker(new MarkerOptions().position(obj)
-                    .icon(BitmapDescriptorFactory.fromBitmap(smallMarker)));
+        // num 1 : 정상
+        if(num==0.0){
+            bitmapdraw = (BitmapDrawable)getResources().getDrawable(R.drawable.light_green);
         }
+        // num 2: 고장
+        else if(num==1.0){
+            bitmapdraw = (BitmapDrawable)getResources().getDrawable(R.drawable.light_black);
+        }
+        // num 3: 수리중
+        else if(num==2.0){
+            bitmapdraw = (BitmapDrawable)getResources().getDrawable(R.drawable.light_red);
+        }
+
+        Bitmap b = bitmapdraw.getBitmap();
+        Bitmap smallMarker = Bitmap.createScaledBitmap(b, width, height, false);
+        map.addMarker(new MarkerOptions().position(obj)
+                .icon(BitmapDescriptorFactory.fromBitmap(smallMarker)));
+    }
     public void add_Marker(GoogleMap map, double x, double y, double count){
 
         // circle settings
@@ -465,16 +474,6 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
             // REPORT에서 신고 확인 눌렀을 경우
             case -1:
                 dialog = ProgressDialog.show(MainActivity.this, "", "신고중입니다. 잠시 기다려주세요", true);
-                dialog.show();
-                mHandler.postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        dialog.dismiss();
-                    }
-                }, 3500);//1000=1s
-                break;
-            case 0:
-                dialog = ProgressDialog.show(MainActivity.this, "", "보안등 정보를 동기화합니다. 잠시 기다려주세요", true);
                 dialog.show();
                 mHandler.postDelayed(new Runnable() {
                     @Override
@@ -843,7 +842,6 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
         }
         xtoServ = markers[num][1];
         ytoServ = markers[num][2];
-
         // GPS 자원 해제
         try{
             lm.removeUpdates(mLocationListener);
@@ -861,6 +859,7 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
                 InputStream myInputStream = null;
                 StringBuilder sb = new StringBuilder();
                 //adding some data to send along with the request to the server
+                System.out.println("x="+xtoServ+", y="+ytoServ);
                 sb.append("x="+xtoServ+"&y="+ytoServ);
                 URL url;
                 try {
@@ -1020,7 +1019,6 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
                     fis2.close();
 
                 }catch (Exception e){               // 초기 마커 데이터가 없는 경우, 자동으로 동기화를 시작한다.
-                    ProgressDial(0);
                     getInfo();
                     print_updatedMarker(mMap);
                     e.printStackTrace();

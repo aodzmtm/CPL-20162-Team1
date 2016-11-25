@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
-
-<properties version="1.0">
-    <entry key="mybatis">mybatis-config.xml</entry>
-    <entry key="properties">dcms.properties</entry>
-    <entry key="config">dcms-config.xml</entry>
-    <entry key="message">message.properties</entry>
-</properties>

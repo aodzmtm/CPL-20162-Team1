@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="ParsingMapper">
+
+	<resultMap id="ReplyVO" type = "light.vo.ReplyVO"></resultMap>
+	<resultMap id="String" type = "java.lang.String"></resultMap>
+	<resultMap id="LampVO" type = "light.vo.LampVo"></resultMap>
+
+	<select id="selectBeaconID" parameterType="light.vo.RequestVO"
+		resultMap = "String">
+		SELECT
+			beacon_id	
+		FROM street_lamp.test_street_lamp_state
+		WHERE beacon_addr = #{mACAddr}
+	</select>
+	
+	<update id = "updateLampState" parameterType = "light.vo.EventVO">
+		UPDATE street_lamp.test_street_lamp_state
+		SET
+			date_time = #{date_time},
+			power_off = #{power_off},
+			abnormal_blink = #{abnormal_blink},
+			short_circuit = #{short_circuit},
+			lamp_failure = #{lamp_failure},
+			lamp_state = #{lamp_state},
+			illumination = #{illumination}
+
+		WHERE
+			beacon_id = #{beacon_id}
+	</update>
+	
+	<select id = "selectLampState" parameterType = "light.vo.EventVO"
+		resultMap = "LampVO">
+		SELECT * from street_lamp.test_street_lamp_state
+		WHERE
+			beacon_id = #{beacon_id}
+	</select>
+			
+</mapper>

@@ -1,8 +1,6 @@
 package com.example.safelight;
 
 import android.app.AlertDialog;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.app.ProgressDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -13,7 +11,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -26,11 +23,10 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
+import android.os.StrictMode;
 import android.preference.PreferenceManager;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
-import android.support.v4.app.NotificationCompat;
-import android.support.v4.app.TaskStackBuilder;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.Menu;
@@ -60,6 +56,7 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.text.SimpleDateFormat;
@@ -78,6 +75,7 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
     private BleSocketPacket mBleSocketPacket;
     private ClientThread mClientThread;
     private BleUtils mBleUtils;
+    private BackPressCloseHandler backPressCloseHandler;
 
     private ArrayList<BleDeviceInfo> mArrayListBleDevice;
     private HashMap<String, BleDeviceInfo> mItemMap;
@@ -97,7 +95,7 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
     private static boolean onService = false;
 
     // 컨스턴트
-    private static final String IP = "192.168.0.4";     // IP주소 설정하기
+    private static final String IP = "herick.iptime.org";     // IP주소 설정하기
     private static final String URL = "ws://"+IP+":8080/light_web/echo.do";
     private static final int REQUEST_ENABLE_BT = 1; // 블루투스 ON 요청 횟수
     private static final long SCAN_PERIOD = 1000;       // 10초동안 SCAN 과정을 수행함
@@ -179,12 +177,20 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
         mBtnInfo = (ImageButton) findViewById(R.id.btn_Info);
         mBtnInfo.setOnClickListener(mClickListener);
 
+        backPressCloseHandler = new BackPressCloseHandler(this);
+
     }
 
     @Override
     protected void onResume() {
         super.onResume();
         killService();
+    }
+
+    @Override
+    public void onBackPressed() {
+        //super.onBackPressed();
+        backPressCloseHandler.onBackPressed();
     }
 
     @Override
@@ -301,13 +307,12 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
                     public void onClick(DialogInterface dialog, int id) {
                         // Action for 'Yes' Button
                         try{
-                            ProgressDial(id);
+                            //ProgressDial(id);
                             // GPS 제공자의 정보가 바뀌면 콜백하도록 리스너 등록하기~!!!
                             lm.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, // 등록할 위치제공자
                                     100, // 통지사이의 최소 시간간격 (miliSecond)
                                     1, // 통지사이의 최소 변경거리 (m)
                                     mLocationListener);
-                            System.out.println("asd");
                             lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, // 등록할 위치제공자
                                     100, // 통지사이의 최소 시간간격 (miliSecond)
                                     1, // 통지사이의 최소 변경거리 (m)
@@ -424,26 +429,29 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
     }
     public void add_Marker(GoogleMap map, double x, double y, double count){
 
-        // circle settings
-        int radiusM = (int)count;
-        LatLng latLng = new LatLng(x,y);
+        if(count>0) {
 
-        // draw circle
-        int d = 250; // diameter
-        Bitmap bm = Bitmap.createBitmap(d, d, Bitmap.Config.ARGB_8888);
-        Canvas c = new Canvas(bm);
-        Paint p = new Paint();
-        p.setColor(Color.RED);
-        c.drawCircle(d/2, d/2, d/2, p);
+            // circle settings
+            int radiusM = (int) count;
+            LatLng latLng = new LatLng(x, y);
 
-        // generate BitmapDescriptor from circle Bitmap
-        BitmapDescriptor bmD = BitmapDescriptorFactory.fromBitmap(bm);
+            // draw circle
+            int d = 250; // diameter
+            Bitmap bm = Bitmap.createBitmap(d, d, Bitmap.Config.ARGB_8888);
+            Canvas c = new Canvas(bm);
+            Paint p = new Paint();
+            p.setColor(Color.RED);
+            c.drawCircle(d / 2, d / 2, d / 2, p);
 
-        // mapView is the GoogleMap
-        map.addGroundOverlay(new GroundOverlayOptions().
-                image(bmD).
-                position(latLng,radiusM*2,radiusM*2).
-                transparency(0.4f));
+            // generate BitmapDescriptor from circle Bitmap
+            BitmapDescriptor bmD = BitmapDescriptorFactory.fromBitmap(bm);
+
+            // mapView is the GoogleMap
+            map.addGroundOverlay(new GroundOverlayOptions().
+                    image(bmD).
+                    position(latLng, radiusM * 2, radiusM * 2).
+                    transparency(0.4f));
+        }
     }
 
     //잠깐 로딩 다이얼 띄우기
@@ -623,29 +631,30 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
                 scanRecordAsHex.substring(38, 50));
 
         // 현재시간 받아오기
-        SimpleDateFormat mSimpleDateFormat = new SimpleDateFormat("yyyy:ss");
+        SimpleDateFormat mSimpleDateFormat = new SimpleDateFormat("yyyy:MMddHHmmss");
         Date currentYear = new Date();
         String mDate = mSimpleDateFormat.format ( currentYear );
 
         // 년도
         String bYear = mDate.substring(2,4);
         // 월
-        int tempMonth = BleUtils.hex2dec(scanRecordAsHex.substring(51,52));
-        String bMonth = mBleUtils.dec2str(tempMonth);
+        //int tempMonth = BleUtils.hex2dec(scanRecordAsHex.substring(51,52));
+        //String bMonth = mBleUtils.dec2str(tempMonth);
         // 일
-        int tempDay= BleUtils.hex2dec(scanRecordAsHex.substring(53,54));
-        String bDay = mBleUtils.dec2str(tempDay);
+        //int tempDay= BleUtils.hex2dec(scanRecordAsHex.substring(53,54));
+        //String bDay = mBleUtils.dec2str(tempDay);
         // 시
-        int tempHour = BleUtils.hex2dec(scanRecordAsHex.substring(55,56));
-        String bHour = mBleUtils.dec2str(tempHour);
+        //int tempHour = BleUtils.hex2dec(scanRecordAsHex.substring(55,56));
+        //String bHour = mBleUtils.dec2str(tempHour);
         // 분
-        int tempMin = BleUtils.hex2dec(scanRecordAsHex.substring(57,58));
-        String bMin = mBleUtils.dec2str(tempMin);
+        //int tempMin = BleUtils.hex2dec(scanRecordAsHex.substring(57,58));
+        //String bMin = mBleUtils.dec2str(tempMin);
         // 초
-        String bSec = mDate.substring(5,7);
+        //String bSec = mDate.substring(5,7);
 
         // 파싱한 최종 날짜 및 시간
-        bDate = bYear + bMonth + bDay + bHour + bMin + bSec;
+        //bDate = bYear + bMonth + bDay + bHour + bMin + bSec;
+        bDate = bYear+ mDate.substring(5,15);
 
         // 비컨 상태정보
         int tempState1 = mBleUtils.hex2dec(scanRecordAsHex.substring(58,60));
@@ -714,14 +723,9 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 
                     url2 = new URL(urlString2);
                     HttpURLConnection conn2 = (HttpURLConnection) url2.openConnection();
-                    //conn2.setConnectTimeout(10 * 1000);
-                    //conn2.setReadTimeout(10 * 1000);
-
-                  /*  conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");*/
                     conn2.setDoOutput(true);
                     conn2.setDoInput(true);
                     conn2.setRequestMethod("POST");
-                    // this is were we're adding post data to the request
 
                     String line2 = null;
                     String json2 ="";
@@ -840,6 +844,7 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
                 num = i;
             }
         }
+        System.out.println("x="+x+"&y="+y);
         xtoServ = markers[num][1];
         ytoServ = markers[num][2];
         // GPS 자원 해제
@@ -859,7 +864,6 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
                 InputStream myInputStream = null;
                 StringBuilder sb = new StringBuilder();
                 //adding some data to send along with the request to the server
-                System.out.println("x="+xtoServ+", y="+ytoServ);
                 sb.append("x="+xtoServ+"&y="+ytoServ);
                 URL url;
                 try {
@@ -1016,11 +1020,13 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
                             }
                         }
                     }
+                    x = markers[0][1];
+                    y = markers[0][2];
                     fis2.close();
 
                 }catch (Exception e){               // 초기 마커 데이터가 없는 경우, 자동으로 동기화를 시작한다.
-                    getInfo();
-                    print_updatedMarker(mMap);
+                    //getInfo();
+                    //print_updatedMarker(mMap);
                     e.printStackTrace();
                 }
             }

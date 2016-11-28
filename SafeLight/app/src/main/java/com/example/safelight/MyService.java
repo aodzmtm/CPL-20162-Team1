@@ -46,7 +46,7 @@ public class MyService extends Service {
                     .setContentTitle("Safelight")
                     .setContentText("새로운 보안등 발견")
                     .setTicker("Alert")
-                    .setSmallIcon(R.drawable.infor)
+                    .setSmallIcon(R.drawable.info)
                     .setContentIntent(pendingIntent)
                     .build();
 

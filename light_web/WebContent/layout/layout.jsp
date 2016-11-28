@@ -63,6 +63,7 @@ div {
 }
 </style>
 <link type="text/css" href="css/layout.css" rel="stylesheet" />
+<link type="text/css" href="css/graph.css" rel="stylesheet" />
 <link rel="stylesheet" type="text/css" media="screen" href="jqueryui/jquery-ui.css" />
 <link rel="stylesheet" type="text/css" media="screen" href="jqgrid/css/ui.jqgrid.css" />
 <script src="js/imageControl.js" language="javaScript" type="text/javascript"></script>
@@ -73,6 +74,7 @@ div {
 <script type="text/javascript" src="js/util.js"></script>
 <script src="js/jquery-1.11.0.min.js"></script>
 <script src="jqgrid/src/i18n/grid.locale-kr.js"></script>
+
 <script src="js/imageControl.js" language="javaScript" type="text/javascript"></script>
 <script src="js/common.js" language="javaScript" type="text/javascript"></script>
 <script src="graph/Chart.min.js"></script>
@@ -103,7 +105,6 @@ div {
 
 </head>
 
-
 <body>
 	<tiles:insertAttribute name="dialog" />
 	<div align="center" style="height: 100%;">
@@ -114,22 +115,17 @@ div {
 						name="leftSide" /></td>
 				<td height="100%" align=center>
 					<table style="width: 1100px;">
-						<tr
-							style="height: 730px; vertical-align: top; border-style: solid; border-color: #bce1fa;">
+						<tr	style="height: 730px; vertical-align: top; border-style: solid; border-color: #bce1fa;">
 							<td><tiles:insertAttribute name="main" /></td>
 						</tr>
 						<tr>
 							<td><tiles:insertAttribute name="state" /></td>
 						</tr>
-
 					</table>
-
 				</td>
-
-				<td width="250px" align=center style="vertical-align: top"><tiles:insertAttribute
-						name="rightSide" /></td>
+				<td width="250px" align=center style="vertical-align: top"><tiles:insertAttribute name="rightSide" />
+				</td>
 			</tr>
-
 		</table>
 	</div>
 </body>

@@ -18,8 +18,7 @@ function getGridRequest() {
 				display.innerHTML = str;
 				lampGrid();
 				lampHistoryGrid();
-			} else
-				alert("데이터를 가져오기 실패");
+			}// else alert("데이터를 가져오기 실패");
 		}
 	}
 }

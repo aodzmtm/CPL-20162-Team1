@@ -20,8 +20,7 @@
 						display.innerHTML = str;
 						profileCheck();
 						lampInfoStateConnect();
-					} else
-						alert("데이터를 가져오기 실패");
+					} //else alert("데이터를 가져오기 실패");
 				}
 			}
 		}
@@ -173,34 +172,37 @@
 		if ("${sessionScope.admin.admin_id}" != "") {
 			document.getElementById("leftButton1").className = "active";
 			leftNoneButton2();
+			leftNoneButton3();
 		}
 	}
 	function leftButton2() {
 		if ("${sessionScope.admin.admin_id}" != "") {
 			document.getElementById("leftButton2").className = "active";
 			leftNoneButton1();
+			leftNoneButton3();
 		}
 	}
 	function leftButton3() {
 		if ("${sessionScope.admin.admin_id}" != "") {
-		document.getElementById("leftButton3").className = "active";
-		leftNoneButton1();
-		leftNoneButton2();
+			document.getElementById("leftButton3").className = "active";
+			leftNoneButton1();
+			leftNoneButton2();
 		}
 	}
+
 	function leftNoneButton1() {
 		if ("${sessionScope.admin.admin_id}" != "") {
 			document.getElementById("leftButton1").className = "";
 		}
 	}
-	function leftNoneButton3() {
-		if ("${sessionScope.admin.admin_id}" != "") {
-		document.getElementById("leftButton3").className = "";
-		}
-	}
 	function leftNoneButton2() {
 		if ("${sessionScope.admin.admin_id}" != "") {
 			document.getElementById("leftButton2").className = "";
+		}
+	}
+	function leftNoneButton3() {
+		if ("${sessionScope.admin.admin_id}" != "") {
+			document.getElementById("leftButton3").className = "";
 		}
 	}
 </script>

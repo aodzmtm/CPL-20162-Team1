@@ -14,7 +14,7 @@
 			'abnormal_blink':input_abnormal_blink.value,
 			'short_circuit':input_short_circuit.value,
 			'lamp_failure':input_lamp_failure.value,
-			'lamp_state':input_lamp_state.value,
+			'lamp_statze':input_lamp_state.value,
 			'illumination':input_illumination.value,
 			'x':input_x.value,
 			'y':input_y.value

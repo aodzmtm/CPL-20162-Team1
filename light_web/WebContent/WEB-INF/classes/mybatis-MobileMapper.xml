@@ -127,6 +127,7 @@
 		street_lamp.test_tb_failure_history 
 		WHERE id=#{id}
 	</delete>
+	
 	<select id="selectNeedLocation" parameterType="java.util.HashMap"
 		resultType="light.vo.NeedLocationVo">
         	SELECT * FROM street_lamp.test_street_need_location
@@ -135,6 +136,7 @@
 		</if>
 	</select>
 	
+	
 	<insert id="insertNeedLocation" parameterType="light.vo.NeedLocationVo">
 		INSERT INTO street_lamp.test_street_need_location
 		(x,
@@ -142,6 +144,23 @@
 		(#{x},
 		#{y})
 	</insert>
+	
+	<select id="checkNeedLocation" parameterType="light.vo.NeedLocationVo"
+		resultType="light.vo.NeedLocationVo">
+			SELECT * FROM street_lamp.test_street_need_location
+			
+			WHERE x = #{x}
+			AND y = #{y}
+	</select>
+	
+	<update id="updateNeedLocation" parameterType="light.vo.NeedLocationVo">
+		UPDATE
+		street_lamp.test_street_need_location SET
+		count=#{count}
+		WHERE x=#{x}
+		AND y = #{y}
+		
+	</update>
 	
 
 </mapper>

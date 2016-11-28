@@ -50,11 +50,30 @@
 		};
 
 		function onMessage(event) {
-			textarea.value += event.data + "\n";
+			
+			var message = event.data;
+			var makeDangerMessage = message.split("dangerLocationMessage::");
+
 			if(document.getElementById("map").style.display != "none")
-				initMap();
+			{
+				if(makeDangerMessage[1]!=null)
+					{
+						textarea.value += makeDangerMessage[1] + "\n";	
+					}
+				else
+					{
+						textarea.value += message + "\n";
+						initMap();
+					}
+				}
 			if(document.getElementById("grid").style.display != "none")
-				getGridRequest();
+				{
+					var grid = $("#jqGrid");
+					var selectedIDs = grid.getGridParam("selarrrow");
+					if(selectedIDs.length == 0)
+					getGridRequest();
+				
+				}
 		}
 
 		function onOpen(event) {

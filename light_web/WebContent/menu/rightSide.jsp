@@ -16,7 +16,7 @@
   		</tr> -->
 				<tr height="40px">
 					<td><span class="light_state_font" style="margin-left: 10px;">비콘
-							id</span></td>
+							주소</span></td>
 					<td align="center"><input
 						class="editable inline-edit-cell ui-widget-content ui-corner-all"
 						type="text" style="height: 25px; width: 140px;" id="beacon_addr"
@@ -24,7 +24,7 @@
 				</tr>
 				<tr height="40px">
 					<td><span class="light_state_font" style="margin-left: 10px;">비콘
-							주소</span></td>
+							id</span></td>
 					<td align="center"><input
 						class="editable inline-edit-cell ui-widget-content ui-corner-all"
 						type="text" style="height: 25px; width: 140px;" id="beacon_id"
@@ -144,7 +144,7 @@
 								대 </span></td>
 					</tr>
 					<tr height="30px">
-						<td align="left"><span style="color: #12b806">● 이상 점소등</span></td>
+						<td align="left"><span style="color: #FCE883">● 이상 점소등</span></td>
 						<td align="right"><input class="stateElement" size="5"
 							id="abnormal_blink_total" value=""
 							onclick="abnormalBlinkTotalFilter()" readonly="readonly"></input>
@@ -182,7 +182,7 @@
 		</div>
 	</div>
 </div>
-<!-- <input id="id" value=""></input>
+<!--  <input id="id" value=""></input>
 <input id="illumination" value=""></input>
 <input id="x" value=""></input>
 <input id="y" value=""></input> -->
@@ -190,4 +190,4 @@
 <input type="hidden" id="id" value=""></input>
 <input type="hidden" id="illumination" value=""></input>
 <input type="hidden" id="x" value=""></input>
-<input type="hidden" id="y" value=""></input> 
+<input type="hidden" id="y" value=""></input>

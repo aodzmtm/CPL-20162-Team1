@@ -6,7 +6,7 @@
 function addLightOnMarker(location) {
 
 	var image = {
-		url : 'img/light_on.png',
+		url : 'img/light_green.png',
 		size : new google.maps.Size(462, 462),
 		origin : new google.maps.Point(0, 0),
 		anchor : new google.maps.Point(34, 34),
@@ -23,9 +23,9 @@ function addLightOnMarker(location) {
 	//삭제시 쓴다.
 
 	marker.addListener('click', function(event) {
-		//alert(event.latLng);
+		//alert(event.latLng+"1");
 		addDeleteMarkers();
-		searchLamp(event.latLng.lat(), event.latLng.lng());
+		searchLamp(roundLocation(event.latLng.lat()), roundLocation(event.latLng.lng()));
 	});
 
 	markers.push(marker);
@@ -49,7 +49,7 @@ function addMarker(location) {
 	//마커 정보 가져오기
 
 	marker.addListener('click', function(event) {
-		searchLamp(event.latLng.lat(), event.latLng.lng());
+		searchLamp(roundLocation(event.latLng.lat()), roundLocation(event.latLng.lng()));
 	});
 	addDeleteMarkers();
 	addMarkers.push(marker);
@@ -75,7 +75,7 @@ function addLightOffMarker(location) {
 	marker.addListener('click', function(event) {
 		//alert(event.latLng);
 		addDeleteMarkers();
-		searchLamp(event.latLng.lat(), event.latLng.lng());
+		searchLamp(roundLocation(event.latLng.lat()), roundLocation(event.latLng.lng()));
 	});
 
 	markers.push(marker);
@@ -100,7 +100,7 @@ function addLightAlarmMarker(location) {
 	marker.addListener('click', function(event) {
 		//alert(event.latLng);
 		addDeleteMarkers();
-		searchLamp(event.latLng.lat(), event.latLng.lng());
+		searchLamp(roundLocation(event.latLng.lat()), roundLocation(event.latLng.lng()));
 	});
 
 	markers.push(marker);
@@ -124,7 +124,7 @@ function addLightBallAlarmMarker(location) {
 	marker.addListener('click', function(event) {
 		//alert(event.latLng);
 		addDeleteMarkers();
-		searchLamp(event.latLng.lat(), event.latLng.lng());
+		searchLamp(roundLocation(event.latLng.lat()), roundLocation(event.latLng.lng()));
 	});
 
 	markers.push(marker);
@@ -132,7 +132,7 @@ function addLightBallAlarmMarker(location) {
 function addLightLampAlarmMarker(location) {
 
 	var image = {
-		url : 'img/light_lamp.png',
+		url : 'img/light_alarm.png',
 		origin : new google.maps.Point(0, 0),
 		anchor : new google.maps.Point(34, 34),
 		scaledSize : new google.maps.Size(45, 45)
@@ -148,7 +148,7 @@ function addLightLampAlarmMarker(location) {
 	marker.addListener('click', function(event) {
 		//alert(event.latLng);
 		addDeleteMarkers();
-		searchLamp(event.latLng.lat(), event.latLng.lng());
+		searchLamp(roundLocation(event.latLng.lat()), roundLocation(event.latLng.lng()));
 	});
 
 	markers.push(marker);
@@ -174,7 +174,7 @@ function addLightRecentBallAlarmMarker(location) {
 	marker.addListener('click', function(event) {
 		//alert(event.latLng);
 		addDeleteMarkers();
-		searchLamp(event.latLng.lat(), event.latLng.lng());
+		searchLamp(roundLocation(event.latLng.lat()), roundLocation(event.latLng.lng()));
 	});
 
 	markers.push(marker);
@@ -184,7 +184,7 @@ function addLightRecentBallAlarmMarker(location) {
 function addLightRecentLampAlarmMarker(location) {
 
 	var image = {
-		url : 'img/light_lamp.png',
+		url : 'img/light_alarm.png',
 		origin : new google.maps.Point(0, 0),
 		anchor : new google.maps.Point(34, 34),
 		scaledSize : new google.maps.Size(45, 45)
@@ -202,7 +202,7 @@ function addLightRecentLampAlarmMarker(location) {
 	marker.addListener('click', function(event) {
 		//alert(event.latLng);
 		addDeleteMarkers();
-		searchLamp(event.latLng.lat(), event.latLng.lng());
+		searchLamp(roundLocation(event.latLng.lat()), roundLocation(event.latLng.lng()));
 	});
 
 	markers.push(marker);
@@ -231,7 +231,7 @@ function addLightRecentAlarmMarker(location) {
 	marker.addListener('click', function(event) {
 		//alert(event.latLng);
 		addDeleteMarkers();
-		searchLamp(event.latLng.lat(), event.latLng.lng());
+		searchLamp(roundLocation(event.latLng.lat()), roundLocation(event.latLng.lng()));
 	});
 
 	markers.push(marker);

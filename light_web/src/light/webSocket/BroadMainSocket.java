@@ -73,7 +73,8 @@ public class BroadMainSocket {
 		 				//모바일 1대1 통신 후
 		 				//여기서 서버로 보내고
 		 				try{
-		 					if(message.charAt(13) == 'R'){
+		 					System.out.println(message);
+		 					if(message.length() >= 14 && message.charAt(13) == 'R'){
 		 						RequestParsing requestParsing = new RequestParsing();
 		 						RequestVO requestVO;
 		 						// instruction == 'R' parsing
@@ -81,7 +82,10 @@ public class BroadMainSocket {
 		 					
 		 						// 비컨 주소로 아이디 읽어오기.
 		 						String beacon_id= (String)sqlSession.selectOne("ParsingMapper.selectBeaconID", requestVO);
-		 						//System.out.println(beacon_id);
+		 						
+		 						
+		 						/*System.out.println("beacon_id:  " + beacon_id);
+		 						System.out.println("VO beacon_id:  " + requestVO.getmACAddr());*/
 		 						
 		 						if(beacon_id != null){
 		 							ReplyVO replyVO = new ReplyVO();
@@ -98,7 +102,7 @@ public class BroadMainSocket {
 		 						}
 		 						
 		 					}
-		 					else if(message.charAt(13) == 'E')
+		 					else if(message.length() >= 14 && message.charAt(13) == 'E')
 		 					{
 		 						EventParsing eventParsing = new EventParsing();
 		 						EventVO eventVO;
@@ -111,7 +115,9 @@ public class BroadMainSocket {
 		 							LampVo lampVO = sqlSession.selectOne("ParsingMapper.selectLampState", eventVO);
 		 							
 		 							int result = sqlSession.update("ParsingMapper.updateLampState", eventVO);
+		 							System.out.printf("update result: %d", result);
 		 							if(result > 0 ){
+		 								System.out.println("commit 성공");
 		 								sqlSession.commit();
 		 							}
 			 					
@@ -125,7 +131,7 @@ public class BroadMainSocket {
 		 							session.getBasicRemote().sendText(replyVO.getsTX()+replyVO.getDate_time()+replyVO.getInstruction()+replyVO.getBeacon_id()+replyVO.geteTX());
 		 							
 		 							// 방범등 event 보고가 DB값과 상이하다면 WebClinet에 메시지를 전송해준다.
-		 							if(occurModification(lampVO, eventVO)){
+		 							if(lampVO != null && occurModification(lampVO, eventVO)){
 		 								for (Session client : webClients) 
 		 						 		{ 
 //		 						 			client.getBasicRemote().sendText("새로운 상태 보고"
@@ -155,7 +161,7 @@ public class BroadMainSocket {
 	@OnOpen 
 	 	public void onOpen(Session session) { 
 	 		// Add session to the connected sessions set
-			System.out.println(session.getRequestURI().toString()+"\n");
+//			System.out.println(session.getRequestURI().toString()+"\n");
 	 		System.out.println("wServer:"+session); 
 	 		clients.add(session);
 	 	} 

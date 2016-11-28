@@ -66,7 +66,7 @@
 				marker.addListener('click', function(event) {
 					//alert(event.latLng);
 					addDeleteMarkers();
-					searchLamp(event.latLng.lat(), event.latLng.lng());
+					searchLamp(roundLocation(event.latLng.lat()), roundLocation(event.latLng.lng()));
 				});
 
 				markers.push(marker);
@@ -98,7 +98,7 @@
 					lng : json[i].y
 				};
 				var image = {
-					url : 'img/light_green.png',
+					url : 'img/light_yellow.png',
 					size : new google.maps.Size(462, 462),
 					origin : new google.maps.Point(0, 0),
 					anchor : new google.maps.Point(34, 34),
@@ -117,7 +117,7 @@
 				marker.addListener('click', function(event) {
 					//alert(event.latLng);
 					addDeleteMarkers();
-					searchLamp(event.latLng.lat(), event.latLng.lng());
+					searchLamp(roundLocation(event.latLng.lat()), roundLocation(event.latLng.lng()));
 				});
 
 				markers.push(marker);
@@ -167,7 +167,7 @@
 				marker.addListener('click', function(event) {
 					//alert(event.latLng);
 					addDeleteMarkers();
-					searchLamp(event.latLng.lat(), event.latLng.lng());
+					searchLamp(roundLocation(event.latLng.lat()), roundLocation(event.latLng.lng()));
 				});
 
 				markers.push(marker);
@@ -217,7 +217,7 @@
 				marker.addListener('click', function(event) {
 					//alert(event.latLng);
 					addDeleteMarkers();
-					searchLamp(event.latLng.lat(), event.latLng.lng());
+					searchLamp(roundLocation(event.latLng.lat()), roundLocation(event.latLng.lng()));
 				});
 
 				markers.push(marker);
@@ -268,7 +268,7 @@
 				marker.addListener('click', function(event) {
 					//alert(event.latLng);
 					addDeleteMarkers();
-					searchLamp(event.latLng.lat(), event.latLng.lng());
+					searchLamp(roundLocation(event.latLng.lat()), roundLocation(event.latLng.lng()));
 				});
 
 				markers.push(marker);

@@ -29,7 +29,6 @@ public class GraphController {
 		MakeDateTimeFormat makeDateTimeFormat = new MakeDateTimeFormat();
 
 		list = session.selectList("SqlGraphMapper.selectHistory");
-		// 날짜 바꾸기
 		for (int i = 0; i < list.size(); i++) {
 			HistoryVo historyVo = new HistoryVo();
 			historyVo = list.get(i);

@@ -41,7 +41,7 @@
 
 <mvc:interceptors>
         <mvc:interceptor> 
-           <mvc:mapping path="/lampInfoGraphJson.do"/>
+          
            <mvc:mapping path="/lampInfoGridJson.do"/>
            <mvc:mapping path="/lampInfoGridDelete.do"/>
            

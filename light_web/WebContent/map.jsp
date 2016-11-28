@@ -59,7 +59,7 @@ html, body {
 
 		// This event listener will call addMarker() when the map is clicked.
 		map.addListener('click', function(event) {
-			alert(event.latLng);
+			//alert(event.latLng);
 			addMarker(event.latLng);
 
 		});
@@ -79,7 +79,7 @@ html, body {
 
 		//
 		marker.addListener('click', function(event) {
-			alert(event.latLng);
+			//alert(event.latLng);
 			addMarker(event.latLng);
 
 		});

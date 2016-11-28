@@ -4,7 +4,29 @@
 
 <script type="text/javascript">
 
-	
+/**/	
+
+function startDatePicker() {
+
+   	 $( "#startDate" ).datepicker();
+     $( "#startDate" ).datepicker( "option", "dateFormat", "yy/mm/dd" );
+
+  }
+
+function endDatePicker() {
+
+   	 $( "#endDate" ).datepicker();
+     $( "#endDate" ).datepicker( "option", "dateFormat", "yy/mm/dd" );
+
+  }
+function replaceDate(str)
+{
+	var dateTemp = null;
+	var dateTemp = str.split("/");
+	var date = dateTemp[0]+dateTemp[1]+dateTemp[2];
+	return date;
+}
+/**/
 	function modifyElementValue(){
 		var failureTypeNum = 0;
 		var startDateArg = 0;
@@ -19,25 +41,27 @@
 		
 		if (document.getElementById("startDateTemp") != null)
 		{
-			document.getElementById("startDateTemp").value = document.getElementById("startDate").value;
-			startDateArg = document.getElementById("startDateTemp").value - 20000000;
+			
+			document.getElementById("startDateTemp").value = replaceDate(document.getElementById("startDate").value);
 		}
+		startDateArg = document.getElementById("startDateTemp").value - 20000000;
 		if (document.getElementById("endDateTemp") != null)
 		{
-			document.getElementById("endDateTemp").value = document.getElementById("endDate").value;
-			endDateArg = document.getElementById("endDateTemp").value - 20000000;
+			document.getElementById("endDateTemp").value = replaceDate(document.getElementById("endDate").value);
 		}
+		endDateArg = document.getElementById("endDateTemp").value - 20000000;
+		document.getElementById("pageNumTemp").value = 1;
 		document.getElementById("dateSearch").onclick = function() {
 			getGraphRequest(failureTypeNum, startDateArg, endDateArg);
 		};
 	}
-	
 	function checkDate(date, startDate, endDate){
 		//alert(Math.floor(date.replace(/[^0-9]/g,'')/1000000) + " >= " + startDate + " && " + Math.floor(date.replace(/[^0-9]/g,'')/1000000) + " <= " + endDate);
 		if(Math.floor(date.replace(/[^0-9]/g,'')/1000000) >= startDate && Math.floor(date.replace(/[^0-9]/g,'')/1000000) <= endDate)
 		{
 			return 1;
 		}
+	
 		else
 		{
 			return 0;
@@ -48,13 +72,33 @@
 		return Math.floor(rowDate.replace(/[^0-9]/g,'')/1000000)
 	}
 	
+	function pageMove(direction){
+		if(direction == 1)
+		{
+			if(document.getElementById("pageNumField").innerHTML > 1)
+			{
+				document.getElementById("pageNumTemp").value--;
+				document.getElementById("pageNumField").innerHTML = document.getElementById("pageNumTemp").value;
+				getGraphRequest(document.getElementById("failureTypeNumTemp").value, document.getElementById("startDateTemp").value - 20000000, document.getElementById("endDateTemp").value - 20000000, document.getElementById("pageNumTemp").value);
+			}
+		}
+		else if(direction == 2)
+		{
+			if(document.getElementById("pageNumField").innerHTML < document.getElementById("maxPageNumTemp").value)
+			{
+				document.getElementById("pageNumTemp").value++;
+				document.getElementById("pageNumField").innerHTML = document.getElementById("pageNumTemp").value;
+				getGraphRequest(document.getElementById("failureTypeNumTemp").value, document.getElementById("startDateTemp").value - 20000000, document.getElementById("endDateTemp").value - 20000000, document.getElementById("pageNumTemp").value);
+			}
+		}
+	}
+	
 	$(function() {
-		function drawGraph(failureTypeNum, startDate, endDate) {
+		function drawGraph(failureTypeNum, startDate, endDatem, pageNum) {
 			var lampName = [];
 			var maxCount = 0;
 			var i = 0, j = 0;
 			var obj;
-			var lampNameCount;
 			var request = createJSONHttpRequest();
 			request.open('POST', '/light_web/lampInfoGraphJson.do');
 			//Ajax 요청
@@ -66,7 +110,12 @@
 						obj = JSON.parse(request.responseText);
 						//obj 시작		
 						
-						if(startDate == null && endDate == null)
+						if(pageNum == null)
+							pageNum = 1;
+						else
+							pageNum = document.getElementById("pageNumTemp").value;
+						
+						if(document.getElementById("startDateTemp").value == 999999 && document.getElementById("endDateTemp").value == 0)
 						{
 							startDate = 999999;
 							endDate = 0;
@@ -78,17 +127,29 @@
 									endDate = transformToYMD(obj['rows'][i]['date_time']);
 							}
 						}
+						else
+						{
+							startDate = document.getElementById("startDateTemp").value - 20000000;
+							endDate = document.getElementById("endDateTemp").value - 20000000;
+						}
 						
+						// 0번째 lampName 찾기
 						if (failureTypeNum == 0 && checkDate(obj['rows'][0]['date_time'], startDate, endDate)) {
 							lampName[0] = obj['rows'][0]['location'];
 						}
 						else
 						{
-							for (var i = 0; !(failureTypeNum == obj['rows'][i]['failure_reason_id'] && checkDate(obj['rows'][i]['date_time'], startDate, endDate)) && i < obj['rows'].length; i++);
-							lampName[0] = obj['rows'][i]['location'];
+							for (var i = 0; i < obj['rows'].length; i++)
+								if (failureTypeNum == obj['rows'][i]['failure_reason_id'] && checkDate(obj['rows'][i]['date_time'], startDate, endDate))
+								{
+									lampName[0] = obj['rows'][i]['location'];
+									break;
+								}
 						}
+						//0번째 lampName 찾기 완료
 						
-						for (var i = 0; i < obj['rows'].length; i++) {
+						//1번째부터 끝까지 lampName 찾기 시작
+						for (var i = 1; i < obj['rows'].length; i++) {
 							if (lampName[maxCount] != obj['rows'][i]['location'] && checkDate(obj['rows'][i]['date_time'], startDate, endDate)) {
 								if (failureTypeNum == 0) {
 									maxCount++;
@@ -99,6 +160,12 @@
 								}
 							}
 						}
+						//1번째부터 끝까지 lampName 찾기 완료
+						//maxCount는 lampName의 갯수와 동일, ex) 1개의 경우 0
+						
+						if(document.getElementById("maxPageNumTemp") != null)
+							document.getElementById("maxPageNumTemp").value = (maxCount - (maxCount%12))/ 12 + 1;
+						//페이지 갯수 계산
 						
 						var barChart = null;
 						var barChartData = { 
@@ -112,20 +179,16 @@
 							} ]
 						}
 						
-						if(obj['rows'].length < 12)
+						//실제 그래프 이름배열에 lampName 매핑 시작
+						for(var tempCount = 0; tempCount < 12; tempCount++)
 						{
-							lampNameCount = obj['rows'].length;
+							if(lampName[tempCount + ((pageNum - 1) * 12)] == null)
+								barChartData['labels'][tempCount] = " ";
+							else
+								barChartData['labels'][tempCount] = lampName[tempCount + ((pageNum - 1) * 12)];
+							barChartData['datasets'][0]['data'][tempCount] = getFailureCount(lampName[tempCount + ((pageNum - 1) * 12)], obj, failureTypeNum);
 						}
-						else
-						{
-							lampNameCount = 12;
-						}
-						
-						for(var tempCount = 0; tempCount < lampNameCount; tempCount++)
-						{
-							barChartData['labels'][tempCount] = lampName[tempCount];
-							barChartData['datasets'][0]['data'][tempCount] = getFailureCount(lampName[tempCount], obj, failureTypeNum);
-						}
+						//매핑 완료
 						
 						var graphOptions = "<td width=\"180px\"><div style=\"font-size: 15px; color: #2e62d9; font-weight: bold;\">고장분류</div></td><td width=\"260px\" align=\"left\">"
 								+ "<select id=\"failureType\" class=\"editable inline-edit-cell ui-widget-content ui-corner-all\" style=\"height: 25px; width: 140px;\" onChange=\"modifyElementValue();\">";
@@ -178,7 +241,11 @@
 								+ "</td><td align=\"left\"><input class=\"btn btn-default\" type=\"button\" id=\"dateSearch\" value=\"조회\" style=\"height: 25px; padding: 3px 12px; margin-left:10px\""
 								+ " onclick=\"getGraphRequest(" + failureTypeNum + ");\"></td>";
 						
-						var chart = "<canvas id=\"canvas\" height=\"530\" width=\"950\"></canvas>";
+						var chart = "<canvas id=\"canvas\" height=\"500\" width=\"950\"></canvas>";
+						
+						var pagingButtons = "<span class =\"leftout\" onMouseOut=\"this.className='leftout' \"onMouseOver=\"this.className='leftover'\" onclick=\"pageMove(1);\"></span>"
+										+ "<span id=\"pageNumField\" style=\"font-size: 30px; padding: 10px 10px;\">"+ pageNum +"</span>"
+										+ "<span class =\"rightout\" onMouseOut=\"this.className='rightout' \"onMouseOver=\"this.className='rightover'\" onclick=\"pageMove(2);\"></span>";
 						
 						document.getElementById("graph").innerHTML = "<table style=\"margin:auto; margin-top: 5%; margin-bottom: 5%;  text-align:center\">"
 								+ "<tr style=\"height:60px\">"
@@ -188,27 +255,28 @@
 								+ "</tr>"
 								+ "<tr><td colspan=\"6\">"
 								+ chart
+								+ "</td></tr>"
+								+ "<tr style=\"vertical-align: bottom;\" height=\"50\"><td colspan=\"6\" align=\"center\" height=\"50px\">"
+								+ pagingButtons
 								+ "</td></tr>";
 
+						startDatePicker();
+						endDatePicker();
+			
+						document.getElementById("startDate").value ="20" +startDate.toString().substring(0, 2)+"/"+startDate.toString().substring(2,4)+"/"+startDate.toString().substring(4, 6) ;
+						document.getElementById("endDate").value ="20" +endDate.toString().substring(0, 2)+"/"+endDate.toString().substring(2,4)+"/"+endDate.toString().substring(4, 6) ;
+						
 						var ctx = document.getElementById("canvas").getContext(
 								"2d");
 
 						barChart = new Chart(ctx).StackedBar(barChartData, {
-							//Boolean - Whether the scale should start at zero, or an order of magnitude down from the lowest value
 							scaleBeginAtZero : true,
-							//Boolean - Whether grid lines are shown across the chart
 							scaleShowGridLines : true,
-							//String - Colour of the grid lines
 							scaleGridLineColor : "rgba(0,0,0,0.05)",
-							//Number - Width of the grid lines
 							scaleGridLineWidth : 1,
-							//Boolean - If there is a stroke on each bar
 							barShowStroke : false,
-							//Number - Pixel width of the bar stroke
 							barStrokeWidth : 2,
-							//Number - Spacing between each of the X value sets
 							barValueSpacing : 5,
-							//Number - Spacing between data sets within X values
 							barDatasetSpacing : 1,
 							onAnimationProgress : function() {
 								console.log("onAnimationProgress");
@@ -217,8 +285,11 @@
 								console.log("onAnimationComplete");
 							}
 						})
-					} else
+					}
+					else
+					{
 						dialogLogInCheck();
+					}
 				}
 			}
 		}
@@ -239,14 +310,6 @@
 		}
 		return num;
 	}
-	
-	$("input#btnAdd").on(
-			"click",
-			function() {
-				barChart.addData([ randomScalingFactor(),
-						randomScalingFactor(), randomScalingFactor() ],
-						lampName[(barChart.datasets[0].bars.length) % 12]);
-			});
 
 	$("canvas").on("click", function(e) {
 		var activeBars = barChart.getBarsAtEvent(e);
@@ -258,5 +321,7 @@
 	});
 </script>
 <input type="hidden" id="failureTypeNumTemp" value="0">
-<input type="hidden" id="startDateTemp" value="0">
+<input type="hidden" id="startDateTemp" value="999999">
 <input type="hidden" id="endDateTemp" value="0">
+<input type="hidden" id="pageNumTemp" value="1">
+<input type="hidden" id="maxPageNumTemp" value="1">

@@ -1,6 +1,7 @@
 package light.controller;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
@@ -13,6 +14,7 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import light.dateFormat.MakeDateTimeFormat;
 import light.common.JsonFactory;
@@ -26,7 +28,70 @@ import light.webSocket.BroadMainSocket;
 public class MobileController {
 	
 //명근씨 업데이트 알고리즘 입니다. 이거 사용하면 될겁니다.
-	
+	@RequestMapping(value = "/mobileLampData", produces = "application/json; charset=utf8")
+	public @ResponseBody String getLampData(HttpServletRequest request, HttpServletResponse response) {
+		SqlSession session = MyBatisSessionFactory.getSqlSession();
+		// request 받기
+
+		JsonFactory fac = new JsonFactory();
+		String json = fac.readJSONStringFromRequestBody(request);
+		/*
+		 * try { JSONParser jsonParser = new JSONParser(); // JSON데이터를 넣어 JSON
+		 * Object 로 만들어 준다. JSONObject jsonObject = (JSONObject)
+		 * jsonParser.parse(json); // books의 배열을 추출 JSONArray bookInfoArray =
+		 * (JSONArray) jsonObject.get("TestVo");
+		 * 
+		 * for (int i = 0; i < bookInfoArray.size(); i++) {
+		 * 
+		 * System.out.println("=BOOK_" + i +
+		 * " ===========================================");
+		 * 
+		 * // 배열 안에 있는것도 JSON형식 이기 때문에 JSON Object 로 추출 JSONObject TestVoObject
+		 * = (JSONObject) bookInfoArray.get(i);
+		 * 
+		 * // JSON name으로 추출 System.out.println("id==>" +
+		 * TestVoObject.get("id")); System.out.println("student==>" +
+		 * TestVoObject.get("student"));
+		 * 
+		 * }
+		 * 
+		 * } catch (ParseException e) { // TODO Auto-generated catch block
+		 * e.printStackTrace(); }
+		 */
+		
+		MakeDateTimeFormat makeDateTimeFormat = new MakeDateTimeFormat();
+		JSONObject jsonObj = new JSONObject();
+		HashMap map = new HashMap<String, Object>();
+		JSONArray jsonArray = new JSONArray();
+		String jsonStr = "";
+		List<LampVo> list = session.selectList("SqlMapMapper.selectLamp", map);
+		for (int i = 0; i < list.size(); i++) {
+			LampVo lampVo = new LampVo();
+			HashMap jsonData = new HashMap<String, Object>();
+			lampVo = list.get(i);
+			String dateTime = list.get(i).getDate_time().toString();
+			String makeDateTime = makeDateTimeFormat.addStrDateTime(dateTime);
+			lampVo.setDate_time(makeDateTime);
+			
+			jsonData.put("location", lampVo.getLocation());
+			
+			jsonData.put("power_off", lampVo.getPower_off());
+			jsonData.put("abnormal_blink", lampVo.getAbnormal_blink());
+			jsonData.put("short_circuit", lampVo.getShort_circuit());
+			jsonData.put("lamp_failure", lampVo.getLamp_failure());
+			jsonData.put("lamp_state", lampVo.getLamp_state());
+			jsonData.put("x", lampVo.getX());
+			jsonData.put("y", lampVo.getY());
+			jsonArray.add(jsonData);
+			
+			///list.set(i, lampVo);
+		}
+		session.close();
+		jsonObj.put("LampVo", jsonArray);
+		jsonStr=jsonObj.toJSONString();
+		return jsonStr;
+	}
+
 	@RequestMapping("/mobileUpdateLamp")
 	public void updateLamp(HttpServletRequest request, HttpServletResponse response) throws IOException {
 		SqlSession session = MyBatisSessionFactory.getSqlSession();
@@ -249,8 +314,9 @@ public class MobileController {
 	@RequestMapping("/mobileDanger")
 	public void mobileDanger(HttpServletRequest request, HttpServletResponse response) throws IOException{
 		SqlSession session = MyBatisSessionFactory.getSqlSession();
+		BroadMainSocket bt = new BroadMainSocket();
 		request.setCharacterEncoding("UTF-8");
-		System.out.println("1111");
+		
 		double x = Double.parseDouble(request.getParameter("x"));
 		double y = Double.parseDouble(request.getParameter("y"));
 		
@@ -258,16 +324,72 @@ public class MobileController {
 		needLocationVo.setX(x);
 		needLocationVo.setY(y);
 		
+		NeedLocationVo searchResult = new NeedLocationVo();
+		
 		System.out.println(x);
 		System.out.println(y);
+		bt.getInstance().onMessage("dangerLocationMessage::"+"위험 지역에 대한 신고가 들어왔습니다. (x좌표:"+x+" y좌표:"+y+")", null);
 		
-//		try{
-//			session.insert("SqlMobileMapper.insertNeedLocation", needLocationVo);
-//		}
-//		finally {
-//			session.commit();
-//			session.close();
-//		}
+		try{
+			searchResult = session.selectOne("SqlMobileMapper.checkNeedLocation", needLocationVo);
+			
+			if(searchResult == null)
+				session.insert("SqlMobileMapper.insertNeedLocation", needLocationVo);
+			
+			else{
+				searchResult.setCount(searchResult.getCount() + 1);
+				session.update("SqlMobileMapper.updateNeedLocation", searchResult);
+			}
+		}
+		finally {
+			session.commit();
+			session.close();
+		}
+	}
+	
+	@RequestMapping(value = "/mobileDangerData")
+	public @ResponseBody String getMobileDangerDate(HttpServletRequest request, HttpServletResponse response) {
+		SqlSession session = MyBatisSessionFactory.getSqlSession();
+		// request 받기
+
+		JsonFactory fac = new JsonFactory();
+		
+		JSONObject jsonObj = new JSONObject();
+		HashMap map = new HashMap<String, Object>();
+		JSONArray jsonArray = new JSONArray();
+		
+		String jsonStr = "";
+		List<NeedLocationVo> list = session.selectList("SqlMapMapper.selectNeedLocation", map);
+		for (int i = 0; i < list.size(); i++) {
+			NeedLocationVo NeedLocationVo = new NeedLocationVo();
+			HashMap jsonData = new HashMap<String, Object>();
+			NeedLocationVo = list.get(i);
+			
+			jsonData.put("x", NeedLocationVo.getX());
+			jsonData.put("y", NeedLocationVo.getY());
+			jsonData.put("count", NeedLocationVo.getCount());
+			jsonArray.add(jsonData);
+		}
+		
+		session.close();
+		jsonObj.put("NeedLocationVo", jsonArray);
+		jsonStr=jsonObj.toJSONString();
+		
+		return jsonStr;
+	}
+	
+	
+	@RequestMapping(value = "/mobileDangerDataWeb")
+	public @ResponseBody List<NeedLocationVo> getMobileDangerDateWeb(HttpServletRequest request, HttpServletResponse response) {
+		SqlSession session = MyBatisSessionFactory.getSqlSession();
+
+		HashMap map = new HashMap<String, Object>();
+	
+		
+		String jsonStr = "";
+		List<NeedLocationVo> list = session.selectList("SqlMapMapper.selectNeedLocation", map);
+		
+		return list;
 	}
 	
 }

@@ -8,28 +8,20 @@
 	var defaultConfig = {
 		scaleBeginAtZero : true,
 
-		//Boolean - Whether grid lines are shown across the chart
 		scaleShowGridLines : true,
 
-		//String - Colour of the grid lines
 		scaleGridLineColor : "rgba(0,0,0,.05)",
 
-		//Number - Width of the grid lines
 		scaleGridLineWidth : 1,
 
-		//Boolean - If there is a stroke on each bar
 		barShowStroke : true,
 
-		//Number - Pixel width of the bar stroke
 		barStrokeWidth : 2,
 
-		//Number - Spacing between each of the X value sets
 		barValueSpacing : 5,
 
-		//Boolean - Whether bars should be rendered on a percentage base
 		relativeBars : false,
 
-		//String - A legend template
 		legendTemplate : "<ul class=\"<%=name.toLowerCase()%>-legend\"><% for (var i=0; i<datasets.length; i++){%><li><span style=\"background-color:<%=datasets[i].fillColor%>\"></span><%if(datasets[i].label){%><%=datasets[i].label%><%}%></li><%}%></ul>"
 
 	};
@@ -38,7 +30,7 @@
 		name: "StackedBar",
 		defaults : defaultConfig,
 		initialize:  function(data){
-			//Expose options as a scope variable here so we can access it in the ScaleClass
+			//Scale클래스 내부에 접근할 수 있도록 option 노출
 			var options = this.options;
 
 			this.ScaleClass = Chart.Scale.extend({
@@ -74,7 +66,7 @@
 					return (this.calculateY(1) - this.calculateY(0));
 				},
 				calculateBarWidth : function(datasetCount){
-					//The padding between datasets is to the right of each bar, providing that there are more than 1 dataset
+					//dataset 사이의 padding 은 각 bar의 오른쪽에 해당함.
 					return this.calculateBaseWidth();
 				},
 				calculateBarHeight : function(datasets, dsIndex, barIndex, value) {
@@ -98,7 +90,7 @@
 
 			this.datasets = [];
 
-			//Set up tooltip events on the chart
+			//툴팁 이벤트
 			if (this.options.showTooltips){
 				helpers.bindEvents(this, this.options.tooltipEvents, function(evt){
 					var activeBars = (evt.type !== 'mouseout') ? this.getBarsAtEvent(evt) : [];
@@ -114,14 +106,13 @@
 				});
 			}
 
-			//Declare the extension of the default point, to cater for the options passed in to the constructor
 			this.BarClass = Chart.Rectangle.extend({
 				strokeWidth : this.options.barStrokeWidth,
 				showStroke : this.options.barShowStroke,
 				ctx : this.chart.ctx
 			});
 
-			//Iterate through each of the datasets, and build this into a property of the chart
+			//dataset의 값을 반복적으로 차트 내부에 삽입
 			helpers.each(data.datasets,function(dataset,datasetIndex){
 
 				var datasetObject = {
@@ -135,7 +126,6 @@
 
 				helpers.each(dataset.data,function(dataPoint,index){
 					if (helpers.isNumber(dataPoint)){
-						//Add a new point for each piece of data, passing any required data to draw.
 						datasetObject.bars.push(new this.BarClass({
 							value : dataPoint,
 							label : data.labels[index],
@@ -167,7 +157,6 @@
 		},
 		update : function(){
 			this.scale.update();
-			// Reset any highlight colours before updating.
 			helpers.each(this.activeElements, function(activeElement){
 				activeElement.restore(['fillColor', 'strokeColor']);
 			});
@@ -265,10 +254,8 @@
 			this.scale = new this.ScaleClass(scaleOptions);
 		},
 		addData : function(valuesArray,label){
-			//Map the values array for each of the datasets
 			helpers.each(valuesArray,function(value,datasetIndex){
 				if (helpers.isNumber(value)){
-					//Add a new point for each piece of data, passing any required data to draw.
 					this.datasets[datasetIndex].bars.push(new this.BarClass({
 						value : value,
 						label : label,
@@ -283,12 +270,10 @@
 			},this);
 
 			this.scale.addXLabel(label);
-			//Then re-render the chart.
 			this.update();
 		},
 		removeData : function(){
 			this.scale.removeXLabel();
-			//Then re-render the chart.
 			helpers.each(this.datasets,function(dataset){
 				dataset.bars.shift();
 			},this);
@@ -313,13 +298,11 @@
 
 			this.scale.draw(easingDecimal);
 
-			//Draw all the bars for each dataset
 			helpers.each(this.datasets,function(dataset,datasetIndex){
 				helpers.each(dataset.bars,function(bar,index){
 					var y = this.scale.calculateBarY(this.datasets, datasetIndex, index, bar.value),
 						height = this.scale.calculateBarHeight(this.datasets, datasetIndex, index, bar.value);
 
-					//Transition then draw
 					bar.transition({
 						base : this.scale.endPoint - (Math.abs(height) - Math.abs(y)),
 						x : this.scale.calculateBarX(index),

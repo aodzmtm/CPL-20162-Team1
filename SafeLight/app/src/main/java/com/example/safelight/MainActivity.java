@@ -95,7 +95,7 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
     private static boolean onService = false;
 
     // 컨스턴트
-    private static final String IP = "herick.iptime.org";     // IP주소 설정하기
+    private static final String IP = "knuce.iptime.org";     // IP주소 설정하기
     private static final String URL = "ws://"+IP+":8080/light_web/echo.do";
     private static final int REQUEST_ENABLE_BT = 1; // 블루투스 ON 요청 횟수
     private static final long SCAN_PERIOD = 1000;       // 10초동안 SCAN 과정을 수행함
